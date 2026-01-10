@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -15,13 +15,18 @@ const App: React.FC = () => {
         <Navbar />
         <main className="flex-grow flex flex-col">
           <Routes>
+            {/* Main Portal View */}
             <Route path="/" element={<Home />} />
-            {/* Verification Session Route */}
+            
+            {/* Verification Session View */}
             <Route path="/v/:slug" element={<SessionPage />} />
-            {/* Logic-only verification handler */}
+            
+            {/* Logic-only verification callback handler */}
             <Route path="/verify" element={<VerifyHandler />} />
-            {/* API Generation Console (Frontend View) */}
+            
+            {/* API Generation Console (Developer View) */}
             <Route path="/api/console" element={<ApiGenerate />} />
+            
             {/* Catch-all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

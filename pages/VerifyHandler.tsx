@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowLeft, Shield } from 'lucide-react';
 import { APP_CONFIG } from '../constants';
 
 const VerifyHandler: React.FC = () => {
@@ -14,15 +14,15 @@ const VerifyHandler: React.FC = () => {
 
     const payload = {
       embeds: [{
-        title: "✅ User Verified Successfully",
+        title: "✅ Identity Card Validated",
         color: 3066993, // Green
         fields: [
-          { name: "User ID", value: `<@${uid}> (${uid})`, inline: true },
-          { name: "Session Token", value: `\`${slug}\``, inline: true },
-          { name: "Status", value: "AUTHENTICATED", inline: false }
+          { name: "Entity UID", value: `<@${uid}>`, inline: true },
+          { name: "Key ID", value: `\`${slug}\``, inline: true },
+          { name: "Step Status", value: "SUCCESSFUL SYNC", inline: false }
         ],
         timestamp: new Date().toISOString(),
-        footer: { text: "VerifyHub Pro Gateway" }
+        footer: { text: "VerifyPro Gateway Protocol" }
       }]
     };
 
@@ -44,7 +44,7 @@ const VerifyHandler: React.FC = () => {
     const step = stepStr ? parseInt(stepStr) : 0;
 
     if (!activeSlug || isNaN(step)) {
-      setError("Session link broken. Please return to Discord.");
+      setError("Security token mismatch. Access denied.");
       return;
     }
 
@@ -52,14 +52,13 @@ const VerifyHandler: React.FC = () => {
     const stored = localStorage.getItem(sessionKey);
 
     if (!stored) {
-      setError("Session context lost. Please return to the verification page.");
+      setError("Context integrity check failed. Please restart session.");
       return;
     }
 
     const session = JSON.parse(stored);
     const now = Date.now();
     
-    // Validate session age against original creation time
     const sessionAge = now - (session.createdAt || 0);
     const isSessionValid = sessionAge < APP_CONFIG.VERIFY_WINDOW_MS;
     
@@ -83,38 +82,61 @@ const VerifyHandler: React.FC = () => {
 
       setTimeout(() => {
         navigate(`/v/${activeSlug}`);
-      }, 800);
+      }, 1500); // Slightly longer for "tech" feel
     } else {
       if (!isSessionValid) {
-        setError("Your session expired (30 minute limit reached).");
+        setError("Identity buffer expired (30m limit).");
       } else {
-        setError(!isRecent ? "Security window expired. Please try the step again." : "Invalid sequence detected.");
+        setError(!isRecent ? "Security timeout. Re-verify step." : "Sequence out of order.");
       }
     }
   }, [searchParams, navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[75vh] px-6 text-center">
-      {!error ? (
-        <div className="space-y-6">
-          <Loader2 className="w-12 h-12 animate-spin text-white opacity-40 mx-auto" />
-          <h2 className="text-xl font-bold uppercase tracking-tight">Syncing Step {searchParams.get('step')}</h2>
-          <p className="text-gray-500 text-xs max-w-xs mx-auto">Connecting to secure gateway. Please wait...</p>
-        </div>
-      ) : (
-        <div className="glass p-10 rounded-[2rem] max-w-sm w-full border-red-500/20 shadow-2xl">
-          <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-6" />
-          <h2 className="text-lg font-bold mb-2 uppercase">Sync Failed</h2>
-          <p className="text-gray-500 text-xs mb-8 leading-relaxed">{error}</p>
-          <button 
-            onClick={() => navigate('/')}
-            className="flex items-center justify-center space-x-2 w-full bg-white text-black font-bold py-4 rounded-xl transition-all hover:bg-gray-200 active:scale-95"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-xs uppercase tracking-widest">Go Back</span>
-          </button>
-        </div>
-      )}
+    <div className="flex flex-col items-center justify-center min-h-[75vh] px-6">
+      <div className="glass max-w-2xl w-full rounded-[2.5rem] p-12 text-center shadow-2xl border-white/5 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent animate-pulse"></div>
+        
+        {!error ? (
+          <div className="space-y-8 py-8">
+            <div className="relative inline-block">
+               <Loader2 className="w-20 h-20 animate-spin text-indigo-500 opacity-20 mx-auto" />
+               <Shield className="w-8 h-8 text-indigo-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+            </div>
+            <div>
+              <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white mb-2">Syncing Sequence 0{searchParams.get('step')}</h2>
+              <p className="text-gray-500 text-[11px] font-black uppercase tracking-[0.4em]">Establishing secure identity handshake...</p>
+            </div>
+            <div className="w-64 h-1.5 bg-white/5 rounded-full mx-auto overflow-hidden">
+               <div className="h-full bg-indigo-600 animate-[loading_2s_ease-in-out_infinite]" style={{ width: '40%' }}></div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-8 py-8 animate-in fade-in duration-500">
+            <div className="w-20 h-20 bg-red-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+              <AlertCircle className="w-10 h-10 text-red-500" />
+            </div>
+            <div>
+              <h2 className="text-3xl font-black uppercase tracking-tighter italic text-white mb-2">Protocol Violation</h2>
+              <p className="text-red-500/70 text-sm font-bold tracking-tight px-10 leading-relaxed">{error}</p>
+            </div>
+            <button 
+              onClick={() => navigate('/')}
+              className="group flex items-center justify-center space-x-3 w-full max-w-xs mx-auto bg-white text-black font-black py-5 rounded-2xl transition-all hover:bg-gray-200 active:scale-95 shadow-xl"
+            >
+              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              <span className="text-xs uppercase tracking-[0.2em]">Reset Session</span>
+            </button>
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes loading {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(300%); }
+        }
+      `}</style>
     </div>
   );
 };

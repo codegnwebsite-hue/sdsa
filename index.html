@@ -13,15 +13,19 @@
       background-color: #0a0a0b;
       color: #f4f4f5;
     }
+    .grid-bg {
+      background-image: radial-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 0);
+      background-size: 40px 40px;
+    }
     .gradient-text {
       background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
     .glass {
-      background: rgba(24, 24, 27, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 15, 20, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
     @keyframes float {
       0% { transform: translateY(0px); }
@@ -30,10 +34,6 @@
     }
     .animate-float {
       animation: float 4s ease-in-out infinite;
-    }
-    .animate-float-delayed {
-      animation: float 4s ease-in-out infinite;
-      animation-delay: 2s;
     }
   </style>
 <script type="importmap">
@@ -52,7 +52,7 @@
 }
 </script>
 </head>
-<body>
+<body class="grid-bg">
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
