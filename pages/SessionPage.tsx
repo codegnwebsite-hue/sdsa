@@ -23,11 +23,13 @@ const SessionPage: React.FC = () => {
   const [isExpired, setIsExpired] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
-  // Helper to decode base64 that might be missing padding
+  // Helper to decode base64 that might be URL-safe or missing padding
   const safeAtob = (str: string) => {
     try {
+      // Revert URL-safe characters
+      let base64 = str.replace(/-/g, '+').replace(/_/g, '/');
       // Add back padding if missing
-      const padded = str.padEnd(str.length + (4 - str.length % 4) % 4, '=');
+      const padded = base64.padEnd(base64.length + (4 - base64.length % 4) % 4, '=');
       return atob(padded);
     } catch (e) {
       console.error("Base64 decode error", e);
@@ -40,8 +42,8 @@ const SessionPage: React.FC = () => {
     
     let metaData: { uid: string, service: string, createdAt: number } | null = null;
     if (slug.startsWith('u_')) {
-      const base64 = slug.substring(2);
-      const decoded = safeAtob(base64);
+      const base64Part = slug.substring(2);
+      const decoded = safeAtob(base64Part);
       if (decoded) {
         const parts = decoded.split(':');
         if (parts.length >= 3) {
@@ -55,6 +57,7 @@ const SessionPage: React.FC = () => {
     }
 
     if (!metaData) {
+      console.warn("Could not extract metadata from slug:", slug);
       setLoading(false);
       return;
     }
@@ -108,23 +111,18 @@ const SessionPage: React.FC = () => {
   const handleCheckpoint = (step: number) => {
     if (!slug || !session || isExpired) return;
     
-    // Update local state to record the click
     const updated = { ...session, lastClickTime: Date.now(), lastStep: step };
     localStorage.setItem(`session_${slug}`, JSON.stringify(updated));
     setSession(updated);
     setIsSyncing(true);
     
-    // Redirect to the external shortener link
     const targetLink = step === 1 ? APP_CONFIG.CHECKPOINT_1_LINK : APP_CONFIG.CHECKPOINT_2_LINK;
     
-    // Use a small delay so the user sees the "Syncing" state before navigation
     setTimeout(() => {
       window.location.href = targetLink;
     }, 800);
   };
 
-  // This function allows the user to manually trigger the "VerifyHandler" logic 
-  // if the external shortener fails to redirect them back automatically.
   const manualSync = () => {
     if (!slug || !session?.lastStep) return;
     navigate(`/verify?slug=${slug}&step=${session.lastStep}`);

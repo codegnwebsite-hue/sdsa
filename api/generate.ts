@@ -1,3 +1,4 @@
+
 // Fix: Import Buffer explicitly to satisfy TypeScript type checking in Node.js environments
 import { Buffer } from 'buffer';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
@@ -40,16 +41,24 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // 5. Generate Token
-  // Node.js has Buffer built-in, but we use the imported version to resolve TS errors
   const timestamp = Date.now();
   const dataString = `${uid}:${service}:${timestamp}`;
-  const token = `u_${Buffer.from(dataString).toString('base64').replace(/=/g, '')}`;
+  
+  // Generate URL-safe base64 (replace + with - and / with _)
+  const base64 = Buffer.from(dataString).toString('base64');
+  const safeBase64 = base64
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, ''); // Remove padding
+    
+  const token = `u_${safeBase64}`;
   
   // 6. Build Verification URL
   const host = req.headers.host;
   const protocol = host?.includes('localhost') ? 'http' : 'https';
-  // Fix: Updated path to include '/#/' to ensure the HashRouter in the frontend correctly processes the route
-  const verificationUrl = `${protocol}://${host}/#/v/${token}`;
+  
+  // Clean, standard URL for BrowserRouter
+  const verificationUrl = `${protocol}://${host}/v/${token}`;
 
   // 7. Success Response
   return res.status(200).json({
