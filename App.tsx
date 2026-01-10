@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -20,8 +20,8 @@ const App: React.FC = () => {
             <Route path="/v/:slug" element={<SessionPage />} />
             {/* Logic-only verification handler */}
             <Route path="/verify" element={<VerifyHandler />} />
-            {/* API Generation Endpoint */}
-            <Route path="/api/generate" element={<ApiGenerate />} />
+            {/* API Generation Console (Frontend View) */}
+            <Route path="/api/console" element={<ApiGenerate />} />
             {/* Catch-all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
