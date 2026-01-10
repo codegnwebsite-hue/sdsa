@@ -21,9 +21,9 @@ const Home: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              {/* Responsive scaling title */}
-              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.1] uppercase italic break-words max-w-full">
-                CODE<span className="gradient-text">G3N</span>
+              {/* Fixed responsive scaling title - added padding and adjusted leading to prevent italic clipping */}
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.2] uppercase italic break-words max-w-full pr-4 py-1">
+                CODE<span className="gradient-text px-1">G3N</span>
               </h1>
               <p className="text-gray-500 max-w-xl text-lg leading-relaxed font-medium">
                 CodeG3N provides free Netflix cookies 🎬, Xbox accounts 🎮, and Disney+ services ✨ using automated Discord bots. Access is provided instantly through our secure protocol after verification.
