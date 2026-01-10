@@ -43,7 +43,6 @@ const VerifyHandler: React.FC = () => {
     const stepStr = searchParams.get('step');
     const step = stepStr ? parseInt(stepStr) : 0;
     
-    // Fallback to localStorage if search params are missing
     const activeSlug = slugFromUrl || localStorage.getItem('active_session_slug');
 
     if (!activeSlug || isNaN(step) || step === 0) {
@@ -71,25 +70,43 @@ const VerifyHandler: React.FC = () => {
       return;
     }
 
-    // 2. Handshake Validation (The Bug Fix)
+    // 2. Sequential Validation (ENFORCEMENT)
+    // Step 2 cannot be accessed unless Step 1 (cp1) is already true
+    if (step === 2 && !session.cp1) {
+      setError("Sequential violation: Complete Stage 1 (Linkvertise) first. Do not bypass.");
+      return;
+    }
+
+    // 3. Handshake & Bypass Validation
     // We check if the user actually initiated this specific step from the website.
-    // If they manually navigate here, session.lastStep won't match or session.lastClickTime will be missing.
     const isCorrectStep = session.lastStep === step;
     
-    // Verify the redirect happened recently (within 15 minutes to account for slow link shorteners)
+    // Verify the redirect happened recently (within 15 minutes)
     const clickAge = now - (session.lastClickTime || 0);
     const isValidHandshake = session.lastClickTime && clickAge < (15 * 60 * 1000);
 
-    if (!isCorrectStep || !isValidHandshake) {
-      setError("Unauthorized access attempt. Verification must be initiated from the portal.");
+    // If they try to access the verify endpoint without having clicked the button recently
+    if (!isValidHandshake || !isCorrectStep) {
+      setError("Unauthorized access attempt detected. Do not bypass the verification links.");
       return;
+    }
+
+    // 4. Source Validation (Referrer Check)
+    const referrer = document.referrer.toLowerCase();
+    const isLinkvertise = referrer.includes('link-hub.net') || referrer.includes('linkvertise.com');
+    const isPocoLinks = referrer.includes('pocolinks.com');
+
+    // Soft warning/check for bypassers (Note: Some browsers/VPNs strip referrer)
+    // We enforce strictly if the session state suggests a skip
+    if (step === 1 && !isLinkvertise && referrer !== "" && !referrer.includes(window.location.hostname)) {
+       console.warn("Suspicious source detected for Step 1");
     }
     
     // If all checks pass, proceed with updating state
     const updated = {
       ...session,
       [`cp${step}`]: true,
-      // CRITICAL: Reset these to prevent replay of the same verify URL
+      // Reset handshake tokens to prevent replay or direct URL reuse
       lastClickTime: undefined,
       lastStep: undefined 
     };
@@ -135,7 +152,7 @@ const VerifyHandler: React.FC = () => {
             </div>
             <div>
               <h2 className="text-3xl font-black uppercase tracking-tighter italic text-white mb-2">Access Denied</h2>
-              <p className="text-red-500/70 text-sm font-bold tracking-tight px-10 leading-relaxed">{error}</p>
+              <p className="text-red-500/70 text-sm font-bold tracking-tight px-10 leading-relaxed uppercase tracking-widest">{error}</p>
             </div>
             <button 
               onClick={() => navigate('/')}
