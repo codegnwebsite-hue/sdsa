@@ -7,12 +7,14 @@ export const APP_CONFIG = {
   CHECKPOINT_1_LINK: "https://link-hub.net/1322142/5t2U6wJPLrfQ", 
   CHECKPOINT_2_LINK: "https://link.pocolinks.com/BBwS4I",
   
-  DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL_HERE",
+  // Use Vercel Environment Variables for these
+  DISCORD_WEBHOOK_URL: (import.meta as any).env?.VITE_DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL_HERE",
   SERVER_NAME: "Elite Gaming Community",
   
   // Verification window in milliseconds (10 minutes)
   VERIFY_WINDOW_MS: 10 * 60 * 1000,
 
   // Added missing API secret for internal verification generation logic
-  API_SECRET: "YOUR_SECRET_KEY_HERE"
+  // Priorities: Vite Environment Variable > Fallback string
+  API_SECRET: (import.meta as any).env?.VITE_API_SECRET || "YOUR_SECRET_KEY_HERE"
 };
