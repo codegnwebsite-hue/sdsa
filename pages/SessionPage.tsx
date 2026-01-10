@@ -131,11 +131,11 @@ const SessionPage: React.FC = () => {
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
   };
 
-  const getGlowClass = (plan?: string) => {
+  const getGlowColor = (plan?: string) => {
     const p = (plan || 'Free').toLowerCase();
-    if (p.includes('booster')) return 'bg-pink-600';
+    if (p.includes('booster')) return 'bg-pink-500';
     if (p.includes('premium')) return 'bg-blue-600';
-    if (p.includes('basic')) return 'bg-[#7c2d12]'; // Warm neon brown
+    if (p.includes('basic')) return 'bg-orange-900'; // Neon brown
     return 'bg-green-500';
   };
 
@@ -164,10 +164,15 @@ const SessionPage: React.FC = () => {
 
   return (
     <div className="max-w-xl mx-auto px-6 py-12 md:py-20 relative flex items-center justify-center">
-      {/* Background Neon Glow - sunlight-style ambient light */}
-      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] blur-[160px] rounded-full opacity-35 pointer-events-none -z-10 ${getGlowClass(session.plan)}`}></div>
+      {/* 
+          VIBRANT BACKGROUND NEON GLOW 
+          - Large diffused light (sunlight-style) 
+          - Positioned behind the panel (-z-10)
+          - Increased dimensions and opacity for high visibility on dark theme
+      */}
+      <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] blur-[120px] rounded-full opacity-60 pointer-events-none -z-10 ${getGlowColor(session.plan)}`}></div>
       
-      <div className="glass rounded-[2.5rem] overflow-hidden shadow-2xl border-white/5 relative p-8 w-full">
+      <div className="glass rounded-[2.5rem] overflow-hidden shadow-2xl border-white/5 relative p-8 w-full z-10">
         
         {/* Compact Header: Avatar + Name + Service Badge */}
         <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5">
