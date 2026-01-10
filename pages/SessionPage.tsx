@@ -170,12 +170,13 @@ const SessionPage: React.FC = () => {
       */}
       <div className="relative w-full">
         {/* 
-            SUBTLE NEON GLOW 
-            - Matches the panel's dimensions (inset-0)
-            - Centered behind the glass panel
-            - Higher blur for soft diffusion
+            NEON GLOW (REFINED VISIBILITY)
+            - Matches panel dimensions (inset-0)
+            - Increased opacity for high visibility on dark backgrounds
+            - High blur ensures soft diffusion around the edges
+            - Layered behind the panel (-z-10)
         */}
-        <div className={`absolute inset-0 blur-[100px] rounded-[2.5rem] opacity-30 pointer-events-none -z-10 ${getGlowColor(session.plan)}`}></div>
+        <div className={`absolute inset-0 blur-[120px] rounded-[2.5rem] opacity-60 pointer-events-none -z-10 ${getGlowColor(session.plan)}`}></div>
         
         <div className="glass rounded-[2.5rem] overflow-hidden shadow-2xl border-white/5 relative p-8 w-full z-10">
           
