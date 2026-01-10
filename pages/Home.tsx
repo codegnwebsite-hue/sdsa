@@ -21,11 +21,12 @@ const Home: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.1] uppercase italic">
+              {/* Responsive scaling title */}
+              <h1 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.1] uppercase italic break-words max-w-full">
                 CODE<span className="gradient-text">G3N</span>
               </h1>
               <p className="text-gray-500 max-w-xl text-lg leading-relaxed font-medium">
-                CodeG3N is a Discord-based platform powered by custom bots that allow users to generate free accounts and cookies for popular services like Netflix, Xbox, Disney+, and more.
+                CodeG3N provides free Netflix cookies 🎬, Xbox accounts 🎮, and Disney+ services ✨ using automated Discord bots. Access is provided instantly through our secure protocol after verification.
               </p>
             </div>
 
@@ -86,7 +87,7 @@ const Home: React.FC = () => {
             {[
               { title: "Automated Bots", desc: "CodeG3N uses automated Discord bots for every transaction.", icon: Bot },
               { title: "Bot Commands", desc: "Users generate services using simple slash commands.", icon: Zap },
-              { title: "Instant Services", desc: "Includes free accounts and cookies for top platforms.", icon: CheckCircle2 },
+              { title: "Instant Services", desc: "Includes free Netflix cookies 🎬 and Xbox accounts 🎮.", icon: CheckCircle2 },
               { title: "Instant Delivery", desc: "Generation is instant and sent directly to you.", icon: Cpu }
             ].map((item, idx) => (
               <div key={idx} className="glass p-8 rounded-[2rem] border-white/5 hover:bg-white/[0.03] transition-all group">
@@ -102,7 +103,7 @@ const Home: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 mb-32 items-center">
           <div className="space-y-6">
              <h2 className="text-4xl font-black uppercase italic tracking-tighter leading-none">How Generation Works</h2>
-             <p className="text-gray-500 font-medium">Follow our simple bot-driven protocol to start generating services instantly.</p>
+             <p className="text-gray-500 font-medium uppercase tracking-tight text-xs">Follow our simple bot-driven protocol to start generating services instantly.</p>
              <div className="space-y-4 pt-4">
                 {[
                   "Join the CodeG3N Discord server",
