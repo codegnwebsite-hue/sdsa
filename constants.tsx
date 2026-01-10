@@ -1,7 +1,7 @@
 
 export const APP_CONFIG = {
-  OWNER_NAME: "Kishore Pro",
-  DISCORD_INVITE: "https://discord.gg/your-server-invite",
+  OWNER_NAME: "Coder",
+  DISCORD_INVITE: "https://discord.gg/GQ7xHcw2qN",
   
   // Real short links for verification checkpoints
   CHECKPOINT_1_LINK: "https://link-hub.net/1322142/5t2U6wJPLrfQ", 
@@ -9,14 +9,15 @@ export const APP_CONFIG = {
   
   // Webhook and Secret
   DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL_HERE",
-  SERVER_NAME: "Elite Gaming Community",
+  SERVER_NAME: "CodeG3N",
+  SERVER_ICON: "https://cdn.discordapp.com/icons/1398305908240416908/e5a40a9de062771916a476bb2338e0a4.webp",
   
   // Stats
   STATS: {
-    VERIFIED_USERS: "52,401+",
+    VERIFIED_USERS: "10,000+",
     UPTIME: "99.99%",
     PROTECTION: "AES-256",
-    AVG_TIME: "45s"
+    AVG_TIME: "30s"
   },
 
   // Verification window in milliseconds (30 minutes)

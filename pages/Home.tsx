@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageCircle, Lock, ShieldCheck, Zap, Users, Globe, BarChart3, Terminal, Activity, ChevronRight, Fingerprint } from 'lucide-react';
+import { MessageCircle, Lock, ShieldCheck, Zap, Users, ChevronRight, Fingerprint, Bot, Cpu, CheckCircle2 } from 'lucide-react';
 import { APP_CONFIG } from '../constants';
 
 const Home: React.FC = () => {
@@ -12,139 +12,190 @@ const Home: React.FC = () => {
       </div>
 
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 pt-16 pb-24">
-        {/* Main Console Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
-          {/* Left Side: Refined Hero Content (7 Cols) */}
-          <div className="lg:col-span-7 space-y-8 py-8">
+        {/* Hero Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-32">
+          <div className="lg:col-span-7 space-y-8">
             <div className="inline-flex items-center space-x-3 px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
               <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">System Deployment v2.5.4</span>
+              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Automated Discord Bots • Free Generations</span>
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-4xl md:text-6xl font-black tracking-tight text-white leading-[1.1] uppercase italic">
-                Professional <span className="gradient-text">Identity</span><br />
-                Gateway Protocol.
+              <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.1] uppercase italic">
+                CODE<span className="gradient-text">G3N</span>
               </h1>
-              <p className="text-gray-500 max-w-xl text-base md:text-lg leading-relaxed font-medium">
-                The most secure verification layer for <span className="text-white font-bold">{APP_CONFIG.SERVER_NAME}</span>. Automated role assignment with sub-second sync latency and hardware signature validation.
+              <p className="text-gray-500 max-w-xl text-lg leading-relaxed font-medium">
+                CodeG3N is a Discord-based platform powered by custom bots that allow users to generate free accounts and cookies for popular services like Netflix, Xbox, Disney+, and more.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-4 pt-4">
               <a 
                 href={APP_CONFIG.DISCORD_INVITE} 
-                className="flex items-center space-x-3 bg-white text-black font-black py-4 px-8 rounded-2xl transition-all hover:bg-gray-200 active:scale-95 shadow-lg"
+                className="flex items-center space-x-3 bg-white text-black font-black py-4 px-10 rounded-2xl transition-all hover:bg-gray-200 active:scale-95 shadow-lg"
               >
-                <span className="text-xs tracking-widest uppercase">Access Discord</span>
+                <span className="text-xs tracking-widest uppercase italic">Join our Discord Server</span>
                 <MessageCircle className="w-4 h-4" />
               </a>
               <div className="flex items-center space-x-4 bg-white/5 border border-white/10 px-6 rounded-2xl text-gray-400 font-bold text-[10px] tracking-[0.2em] uppercase">
-                <Fingerprint className="w-4 h-4 text-indigo-500" />
-                <span>AES-256 Validated</span>
+                <ShieldCheck className="w-4 h-4 text-indigo-500" />
+                <span>Secure Verification</span>
               </div>
-            </div>
-
-            {/* Live Monitoring Dashboard Preview */}
-            <div className="pt-12 grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {[
-                { label: 'Verified', value: APP_CONFIG.STATS.VERIFIED_USERS, icon: Users },
-                { label: 'Uptime', value: APP_CONFIG.STATS.UPTIME, icon: Activity },
-                { label: 'Latency', value: APP_CONFIG.STATS.AVG_TIME, icon: Zap },
-                { label: 'Security', value: APP_CONFIG.STATS.PROTECTION, icon: Lock },
-              ].map((stat, i) => (
-                <div key={i} className="glass p-5 rounded-2xl border-white/5 group hover:bg-white/[0.03] transition-colors">
-                  <stat.icon className="w-4 h-4 text-indigo-400 mb-3" />
-                  <p className="text-xl font-black text-white tracking-tighter italic">{stat.value}</p>
-                  <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">{stat.label}</span>
-                </div>
-              ))}
             </div>
           </div>
 
-          {/* Right Side: Visual Element / Feature Card (5 Cols) */}
-          <div className="lg:col-span-5 pt-8">
-            <div className="glass rounded-[2.5rem] p-8 border-white/5 shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 opacity-5">
-                <Terminal className="w-48 h-48 text-white rotate-12" />
-              </div>
-              
-              <div className="relative z-10 space-y-6">
-                <div className="flex items-center justify-between border-b border-white/5 pb-6">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-indigo-600 p-2.5 rounded-xl">
-                      <ShieldCheck className="w-5 h-5 text-white" />
-                    </div>
-                    <span className="font-black text-sm uppercase tracking-widest">Gateway Health</span>
-                  </div>
-                  <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-3 py-1 rounded-full uppercase">Operational</span>
+          <div className="lg:col-span-5">
+            <div className="glass rounded-[2.5rem] p-8 border-white/5 shadow-2xl relative overflow-hidden">
+              <div className="space-y-6">
+                <div className="flex items-center space-x-4 pb-6 border-b border-white/5">
+                   <img src={APP_CONFIG.SERVER_ICON} className="w-16 h-16 rounded-2xl shadow-xl border border-white/10" alt="Server Icon" />
+                   <div>
+                      <h3 className="font-black uppercase italic text-xl tracking-tighter">CodeG3N Protocol</h3>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Bot-Driven Ecosystem</p>
+                   </div>
                 </div>
-
+                
                 <div className="space-y-4">
-                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
-                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                      <span>Verification Throughput</span>
-                      <span className="text-white">94% Capacity</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-600 w-[94%] shadow-[0_0_10px_#4f46e5]"></div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 text-xs font-bold text-gray-400 italic">
-                      <ChevronRight className="w-3 h-3 text-indigo-500" />
-                      <span>Request filtering active...</span>
-                    </div>
-                    <div className="flex items-center space-x-3 text-xs font-bold text-gray-400 italic">
-                      <ChevronRight className="w-3 h-3 text-indigo-500" />
-                      <span>Hardware tokens synced...</span>
-                    </div>
-                    <div className="flex items-center space-x-3 text-xs font-bold text-gray-400 italic">
-                      <ChevronRight className="w-3 h-3 text-indigo-500" />
-                      <span>Role mapping verified.</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                   <button className="w-full py-4 rounded-2xl border border-white/10 bg-white/5 text-[10px] font-black uppercase tracking-[0.3em] hover:bg-white/10 transition-colors">
-                     View System Logs
-                   </button>
+                   <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                      <Bot className="w-6 h-6 text-indigo-500" />
+                      <div>
+                         <p className="text-xs font-black uppercase italic">Automated Bots</p>
+                         <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tight">Instant Generation</p>
+                      </div>
+                   </div>
+                   <div className="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/5">
+                      <Cpu className="w-6 h-6 text-indigo-500" />
+                      <div>
+                         <p className="text-xs font-black uppercase italic">Custom commands</p>
+                         <p className="text-[10px] text-gray-500 uppercase font-bold tracking-tight">User-Friendly Interface</p>
+                      </div>
+                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Features Bottom Row */}
-        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-8">
-           {[
-             { 
-               title: "Automated Handshake", 
-               desc: "No manual verification needed. Our bot syncs roles the moment you complete the protocol.",
-               icon: Zap
-             },
-             { 
-               title: "Regional Relays", 
-               desc: "Global distribution points ensure that your verification is lightning fast regardless of location.",
-               icon: Globe
-             },
-             { 
-               title: "Entity Encryption", 
-               desc: "Your data is hashed and salted using industry-leading AES-256 encryption standards.",
-               icon: Lock
-             }
-           ].map((feature, i) => (
-             <div key={i} className="space-y-4 p-4 hover:translate-y-[-4px] transition-transform">
-               <div className="bg-indigo-600/10 w-12 h-12 rounded-2xl flex items-center justify-center border border-indigo-500/20">
-                 <feature.icon className="w-5 h-5 text-indigo-500" />
-               </div>
-               <h3 className="text-xl font-black italic uppercase tracking-tighter text-white">{feature.title}</h3>
-               <p className="text-sm text-gray-500 leading-relaxed font-medium">{feature.desc}</p>
+        {/* System Explanation */}
+        <div className="mb-32">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-4">Bots & Generation System</h2>
+            <div className="w-24 h-1 bg-indigo-600 mx-auto rounded-full"></div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: "Automated Bots", desc: "CodeG3N uses automated Discord bots for every transaction.", icon: Bot },
+              { title: "Bot Commands", desc: "Users generate services using simple slash commands.", icon: Zap },
+              { title: "Instant Services", desc: "Includes free accounts and cookies for top platforms.", icon: CheckCircle2 },
+              { title: "Instant Delivery", desc: "Generation is instant and sent directly to you.", icon: Cpu }
+            ].map((item, idx) => (
+              <div key={idx} className="glass p-8 rounded-[2rem] border-white/5 hover:bg-white/[0.03] transition-all group">
+                <item.icon className="w-8 h-8 text-indigo-500 mb-4 group-hover:scale-110 transition-transform" />
+                <h3 className="text-lg font-black uppercase italic tracking-tighter mb-2">{item.title}</h3>
+                <p className="text-gray-500 text-xs font-medium leading-relaxed uppercase tracking-tight">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* How It Works */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 mb-32 items-center">
+          <div className="space-y-6">
+             <h2 className="text-4xl font-black uppercase italic tracking-tighter leading-none">How Generation Works</h2>
+             <p className="text-gray-500 font-medium">Follow our simple bot-driven protocol to start generating services instantly.</p>
+             <div className="space-y-4 pt-4">
+                {[
+                  "Join the CodeG3N Discord server",
+                  "Complete website verification",
+                  "Use bot commands to generate services",
+                  "Receive accounts or cookies"
+                ].map((step, idx) => (
+                  <div key={idx} className="flex items-center gap-4 group">
+                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-[10px] font-black group-hover:scale-110 transition-transform">{idx + 1}</div>
+                    <span className="text-sm font-black uppercase tracking-tight italic text-gray-300">{step}</span>
+                  </div>
+                ))}
              </div>
-           ))}
+             <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest pt-4 italic">Everything is fully automated by bots.</p>
+          </div>
+          <div className="glass p-10 rounded-[3rem] border-indigo-500/10 bg-indigo-500/[0.02]">
+             <div className="flex items-center gap-4 mb-6">
+                <Lock className="w-6 h-6 text-indigo-500" />
+                <h3 className="text-xl font-black uppercase italic tracking-tighter">Security & Fair Usage</h3>
+             </div>
+             <ul className="space-y-4">
+                <li className="flex gap-3 text-xs font-medium text-gray-500 uppercase tracking-tight">
+                  <div className="mt-1.5 w-1 h-1 bg-indigo-500 rounded-full flex-shrink-0"></div>
+                  Verification is mandatory to protect the community.
+                </li>
+                <li className="flex gap-3 text-xs font-medium text-gray-500 uppercase tracking-tight">
+                  <div className="mt-1.5 w-1 h-1 bg-indigo-500 rounded-full flex-shrink-0"></div>
+                  Bots actively prevent abuse and multi-accounting.
+                </li>
+                <li className="flex gap-3 text-xs font-medium text-gray-500 uppercase tracking-tight">
+                  <div className="mt-1.5 w-1 h-1 bg-indigo-500 rounded-full flex-shrink-0"></div>
+                  Fair usage limits apply to ensure availability for all.
+                </li>
+             </ul>
+          </div>
+        </div>
+
+        {/* Staff Section */}
+        <div>
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-black uppercase italic tracking-tighter mb-4">Staff / Team</h2>
+            <div className="w-24 h-1 bg-indigo-600 mx-auto rounded-full"></div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* Owner */}
+            <div className="glass p-8 rounded-[2.5rem] text-center border-indigo-500/20 group hover:bg-indigo-500/[0.05] transition-all">
+              <img 
+                src="https://cdn.discordapp.com/avatars/1392539609707188264/d5fc620fa4a2311b8045a34d323f2793.png" 
+                className="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-indigo-500 shadow-xl group-hover:scale-105 transition-transform" 
+                alt="Coder" 
+              />
+              <h4 className="text-lg font-black uppercase italic tracking-tighter">Coder</h4>
+              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">coder.hm</p>
+              <span className="inline-block px-3 py-1 rounded-full bg-indigo-600 text-[8px] font-black uppercase tracking-tighter">Owner & Founder</span>
+            </div>
+
+            {/* Co-Owner 1 */}
+            <div className="glass p-8 rounded-[2.5rem] text-center border-white/5 group hover:bg-white/[0.03] transition-all">
+              <img 
+                src="https://cdn.discordapp.com/avatars/1357280420353544262/d78f0b9814393c4158675715d67d17aa.png" 
+                className="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-gray-500 shadow-xl group-hover:scale-105 transition-transform" 
+                alt="Rinxz" 
+              />
+              <h4 className="text-lg font-black uppercase italic tracking-tighter">Rinxz</h4>
+              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">rinxz0586_84074</p>
+              <span className="inline-block px-3 py-1 rounded-full bg-gray-800 text-[8px] font-black uppercase tracking-tighter">Co-Owner</span>
+            </div>
+
+            {/* Co-Owner 2 */}
+            <div className="glass p-8 rounded-[2.5rem] text-center border-white/5 group hover:bg-white/[0.03] transition-all">
+              <img 
+                src="https://cdn.discordapp.com/avatars/1357280064886149171/8e0081792d25ecc27f0d1cf2986e5360.png" 
+                className="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-gray-500 shadow-xl group-hover:scale-105 transition-transform" 
+                alt="ZoroXflash" 
+              />
+              <h4 className="text-lg font-black uppercase italic tracking-tighter">ZoroXflash</h4>
+              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">flash077366</p>
+              <span className="inline-block px-3 py-1 rounded-full bg-gray-800 text-[8px] font-black uppercase tracking-tighter">Co-Owner</span>
+            </div>
+
+            {/* Admin */}
+            <div className="glass p-8 rounded-[2.5rem] text-center border-white/5 group hover:bg-white/[0.03] transition-all">
+              <img 
+                src="https://cdn.discordapp.com/avatars/1371938386599743538/a9c22147e5c3524e2ecabb5ffe928560.png" 
+                className="w-20 h-20 rounded-full mx-auto mb-4 border-2 border-gray-600 shadow-xl group-hover:scale-105 transition-transform" 
+                alt="Lisoo" 
+              />
+              <h4 className="text-lg font-black uppercase italic tracking-tighter">Lisoo</h4>
+              <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-1">lisoo_.1</p>
+              <span className="inline-block px-3 py-1 rounded-full bg-gray-900 text-[8px] font-black uppercase tracking-tighter">Admin</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

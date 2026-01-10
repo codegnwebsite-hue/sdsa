@@ -7,6 +7,9 @@ import Home from './pages/Home';
 import SessionPage from './pages/SessionPage';
 import VerifyHandler from './pages/VerifyHandler';
 import ApiGenerate from './pages/ApiGenerate';
+import Info from './pages/Info';
+import Contact from './pages/Contact';
+import Shop from './pages/Shop';
 
 const App: React.FC = () => {
   return (
@@ -15,19 +18,13 @@ const App: React.FC = () => {
         <Navbar />
         <main className="flex-grow flex flex-col">
           <Routes>
-            {/* Main Portal View */}
             <Route path="/" element={<Home />} />
-            
-            {/* Verification Session View */}
+            <Route path="/info" element={<Info />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/shop" element={<Shop />} />
             <Route path="/v/:slug" element={<SessionPage />} />
-            
-            {/* Logic-only verification callback handler */}
             <Route path="/verify" element={<VerifyHandler />} />
-            
-            {/* API Generation Console (Developer View) */}
             <Route path="/api/console" element={<ApiGenerate />} />
-            
-            {/* Catch-all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
