@@ -1,11 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Loader2, AlertCircle, ArrowLeft, Shield } from 'lucide-react';
 import { APP_CONFIG } from '../constants';
 
 const VerifyHandler: React.FC = () => {
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
@@ -14,15 +14,15 @@ const VerifyHandler: React.FC = () => {
 
     const payload = {
       embeds: [{
-        title: "✅ Identity Card Validated",
-        color: 3066993, // Green
+        title: "✅ Identity Validated",
+        color: 3066993,
         fields: [
           { name: "Entity UID", value: `<@${uid}>`, inline: true },
-          { name: "Key ID", value: `\`${slug}\``, inline: true },
-          { name: "Step Status", value: "SUCCESSFUL SYNC", inline: false }
+          { name: "Session Key", value: `\`${slug}\``, inline: true },
+          { name: "Status", value: "SUCCESSFUL HANDSHAKE", inline: false }
         ],
         timestamp: new Date().toISOString(),
-        footer: { text: "VerifyPro Gateway Protocol" }
+        footer: { text: "VerifyHub Pro Secure Gateway" }
       }]
     };
 
@@ -38,13 +38,16 @@ const VerifyHandler: React.FC = () => {
   };
 
   useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
     const slugFromUrl = searchParams.get('slug');
-    const activeSlug = slugFromUrl || localStorage.getItem('active_session_slug');
     const stepStr = searchParams.get('step');
     const step = stepStr ? parseInt(stepStr) : 0;
+    
+    // Fallback to localStorage if search params are missing (some shorteners strip query params)
+    const activeSlug = slugFromUrl || localStorage.getItem('active_session_slug');
 
-    if (!activeSlug || isNaN(step)) {
-      setError("Security token mismatch. Access denied.");
+    if (!activeSlug || isNaN(step) || step === 0) {
+      setError("Security token or step ID missing from sequence.");
       return;
     }
 
@@ -52,7 +55,7 @@ const VerifyHandler: React.FC = () => {
     const stored = localStorage.getItem(sessionKey);
 
     if (!stored) {
-      setError("Context integrity check failed. Please restart session.");
+      setError("Session context not found. Ensure you are using the same browser.");
       return;
     }
 
@@ -62,35 +65,31 @@ const VerifyHandler: React.FC = () => {
     const sessionAge = now - (session.createdAt || 0);
     const isSessionValid = sessionAge < APP_CONFIG.VERIFY_WINDOW_MS;
     
-    const timeSinceClick = now - (session.lastClickTime || 0);
-    const isValidStep = session.lastStep === step;
-    const isRecent = timeSinceClick < APP_CONFIG.VERIFY_WINDOW_MS;
-
-    if (isSessionValid && isValidStep && isRecent) {
+    // For manual sync or automatic return, we just need to ensure the session exists and isn't expired
+    if (isSessionValid) {
       const updated = {
         ...session,
         [`cp${step}`]: true,
+        // Reset these to allow for clean state on the session page
         lastClickTime: undefined,
-        lastStep: undefined
+        lastStep: undefined 
       };
       
       localStorage.setItem(sessionKey, JSON.stringify(updated));
 
+      // If both checkpoints are cleared, notify Discord
       if (updated.cp1 && updated.cp2) {
         sendWebhook(updated.uid || "Unknown", activeSlug);
       }
 
+      // Return user back to the Identity Card
       setTimeout(() => {
         navigate(`/v/${activeSlug}`);
-      }, 1500); // Slightly longer for "tech" feel
+      }, 1200);
     } else {
-      if (!isSessionValid) {
-        setError("Identity buffer expired (30m limit).");
-      } else {
-        setError(!isRecent ? "Security timeout. Re-verify step." : "Sequence out of order.");
-      }
+      setError("Session buffer expired. Please generate a new link in Discord.");
     }
-  }, [searchParams, navigate]);
+  }, [location, navigate]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[75vh] px-6">
@@ -104,11 +103,11 @@ const VerifyHandler: React.FC = () => {
                <Shield className="w-8 h-8 text-indigo-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
             <div>
-              <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white mb-2">Syncing Sequence 0{searchParams.get('step')}</h2>
-              <p className="text-gray-500 text-[11px] font-black uppercase tracking-[0.4em]">Establishing secure identity handshake...</p>
+              <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white mb-2">Establishing Handshake</h2>
+              <p className="text-gray-500 text-[11px] font-black uppercase tracking-[0.4em]">Syncing sequence with primary gateway...</p>
             </div>
             <div className="w-64 h-1.5 bg-white/5 rounded-full mx-auto overflow-hidden">
-               <div className="h-full bg-indigo-600 animate-[loading_2s_ease-in-out_infinite]" style={{ width: '40%' }}></div>
+               <div className="h-full bg-indigo-600 animate-[loading_1.5s_ease-in-out_infinite]" style={{ width: '40%' }}></div>
             </div>
           </div>
         ) : (

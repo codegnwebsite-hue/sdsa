@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { CheckCircle2, Shield, Loader2, Ticket, AlertCircle, Home, Clock, ChevronRight, User, Terminal, Key, Zap, Fingerprint } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { CheckCircle2, Shield, Loader2, Ticket, AlertCircle, Home, Clock, ChevronRight, User, Terminal, Key, Zap, Fingerprint, RefreshCw } from 'lucide-react';
 import { APP_CONFIG } from '../constants';
 
 interface SessionData {
@@ -16,28 +16,41 @@ interface SessionData {
 
 const SessionPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [session, setSession] = useState<SessionData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number>(APP_CONFIG.VERIFY_WINDOW_MS);
   const [isExpired, setIsExpired] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  // Helper to decode base64 that might be missing padding
+  const safeAtob = (str: string) => {
+    try {
+      // Add back padding if missing
+      const padded = str.padEnd(str.length + (4 - str.length % 4) % 4, '=');
+      return atob(padded);
+    } catch (e) {
+      console.error("Base64 decode error", e);
+      return null;
+    }
+  };
 
   useEffect(() => {
     if (!slug) return;
     
-    // Auth directly from the Slug token
     let metaData: { uid: string, service: string, createdAt: number } | null = null;
     if (slug.startsWith('u_')) {
-      try {
-        const base64 = slug.substring(2);
-        const decoded = atob(base64);
-        const [uid, service, timestamp] = decoded.split(':');
-        metaData = {
-          uid,
-          service,
-          createdAt: parseInt(timestamp) || Date.now()
-        };
-      } catch (e) {
-        console.error("Token decode error", e);
+      const base64 = slug.substring(2);
+      const decoded = safeAtob(base64);
+      if (decoded) {
+        const parts = decoded.split(':');
+        if (parts.length >= 3) {
+          metaData = {
+            uid: parts[0],
+            service: parts[1],
+            createdAt: parseInt(parts[2]) || Date.now()
+          };
+        }
       }
     }
 
@@ -46,7 +59,8 @@ const SessionPage: React.FC = () => {
       return;
     }
 
-    const stored = localStorage.getItem(`session_${slug}`);
+    const storedKey = `session_${slug}`;
+    const stored = localStorage.getItem(storedKey);
     let currentSession: SessionData;
 
     if (stored) {
@@ -67,7 +81,7 @@ const SessionPage: React.FC = () => {
       };
     }
     
-    localStorage.setItem(`session_${slug}`, JSON.stringify(currentSession));
+    localStorage.setItem(storedKey, JSON.stringify(currentSession));
     localStorage.setItem('active_session_slug', slug);
     setSession(currentSession);
     setLoading(false);
@@ -93,16 +107,27 @@ const SessionPage: React.FC = () => {
 
   const handleCheckpoint = (step: number) => {
     if (!slug || !session || isExpired) return;
+    
+    // Update local state to record the click
     const updated = { ...session, lastClickTime: Date.now(), lastStep: step };
     localStorage.setItem(`session_${slug}`, JSON.stringify(updated));
     setSession(updated);
+    setIsSyncing(true);
     
-    // Construct the verification return URL
-    const currentHost = window.location.origin + window.location.pathname;
-    const returnUrl = `${currentHost}#/verify?slug=${slug}&step=${step}`;
+    // Redirect to the external shortener link
+    const targetLink = step === 1 ? APP_CONFIG.CHECKPOINT_1_LINK : APP_CONFIG.CHECKPOINT_2_LINK;
     
-    // For this demo, we use the hardcoded checkpoint links but theoretically they redirect to returnUrl
-    window.location.href = step === 1 ? APP_CONFIG.CHECKPOINT_1_LINK : APP_CONFIG.CHECKPOINT_2_LINK;
+    // Use a small delay so the user sees the "Syncing" state before navigation
+    setTimeout(() => {
+      window.location.href = targetLink;
+    }, 800);
+  };
+
+  // This function allows the user to manually trigger the "VerifyHandler" logic 
+  // if the external shortener fails to redirect them back automatically.
+  const manualSync = () => {
+    if (!slug || !session?.lastStep) return;
+    navigate(`/verify?slug=${slug}&step=${session.lastStep}`);
   };
 
   const formatTime = (ms: number) => {
@@ -113,7 +138,7 @@ const SessionPage: React.FC = () => {
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
       <Loader2 className="w-12 h-12 animate-spin text-indigo-500" />
-      <span className="text-xs font-black uppercase tracking-widest text-gray-500">Decrypting Session...</span>
+      <span className="text-xs font-black uppercase tracking-widest text-gray-500">Decrypting Identity...</span>
     </div>
   );
 
@@ -139,8 +164,7 @@ const SessionPage: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-16">
-      {/* Horizontal Identity Card Layout */}
-      <div className="glass rounded-[2rem] overflow-hidden shadow-2xl border-white/5 relative flex flex-col md:flex-row min-h-[420px]">
+      <div className="glass rounded-[2rem] overflow-hidden shadow-2xl border-white/5 relative flex flex-col md:flex-row min-h-[460px]">
         
         {/* Left Section - Sidebar Info */}
         <div className="bg-white/[0.03] border-b md:border-b-0 md:border-r border-white/5 p-10 flex flex-col justify-between w-full md:w-80">
@@ -199,58 +223,79 @@ const SessionPage: React.FC = () => {
 
         {/* Right Section - Steps Content */}
         <div className="flex-1 p-12 flex flex-col justify-center items-center text-center bg-gradient-to-br from-transparent to-white/[0.01]">
-          {!session.cp1 ? (
-            /* STEP 1 UI */
+          {isSyncing ? (
+            <div className="w-full space-y-8 animate-in fade-in zoom-in-95 duration-300">
+               <Loader2 className="w-20 h-20 animate-spin text-indigo-500 mx-auto" />
+               <div>
+                  <h3 className="text-3xl font-black text-white uppercase italic tracking-tighter">Redirecting...</h3>
+                  <p className="text-gray-500 text-xs font-bold uppercase tracking-widest mt-2">Establishing Handshake with Gateway</p>
+               </div>
+            </div>
+          ) : !session.cp1 ? (
+            /* STEP 1 */
             <div className="w-full animate-in fade-in slide-in-from-right-10 duration-500">
               <div className="inline-block px-5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[11px] font-black text-indigo-400 uppercase tracking-[0.4em] mb-8 italic">Stage 01: Initialization</div>
               <h3 className="text-5xl font-black text-white mb-6 uppercase tracking-tighter italic leading-none">Authorization</h3>
               <p className="text-gray-400 text-base mb-12 leading-relaxed max-w-sm mx-auto font-medium">
                 The initial handshake requires manual validation. Proceed to Step 1 to sync your session state.
               </p>
-              <button 
-                onClick={() => handleCheckpoint(1)}
-                className="group flex items-center justify-center space-x-5 bg-white text-black font-black py-6 px-16 rounded-[2rem] transition-all shadow-2xl hover:bg-gray-200 active:scale-95 w-full max-w-sm mx-auto"
-              >
-                <span className="text-sm uppercase tracking-[0.3em]">Launch Step 1</span>
-                <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-              </button>
+              
+              <div className="space-y-4 max-w-sm mx-auto">
+                <button 
+                  onClick={() => handleCheckpoint(1)}
+                  className="group flex items-center justify-center space-x-5 bg-white text-black font-black py-6 px-16 rounded-[2rem] transition-all shadow-2xl hover:bg-gray-200 active:scale-95 w-full"
+                >
+                  <span className="text-sm uppercase tracking-[0.3em]">Launch Step 1</span>
+                  <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                </button>
+                {session.lastStep === 1 && (
+                  <button onClick={manualSync} className="text-xs font-bold text-indigo-400 hover:text-white transition-colors uppercase tracking-widest flex items-center justify-center gap-2 mx-auto pt-4">
+                    <RefreshCw className="w-3.5 h-3.5" /> Already clicked? Sync Status
+                  </button>
+                )}
+              </div>
             </div>
           ) : !session.cp2 ? (
-            /* STEP 2 UI */
+            /* STEP 2 */
             <div className="w-full animate-in fade-in slide-in-from-right-10 duration-500">
               <div className="inline-block px-5 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-[11px] font-black text-purple-400 uppercase tracking-[0.4em] mb-8 italic">Stage 02: Verification</div>
               <h3 className="text-5xl font-black text-white mb-6 uppercase tracking-tighter italic leading-none">Security Filter</h3>
               <p className="text-gray-400 text-base mb-12 leading-relaxed max-w-sm mx-auto font-medium">
                 Authorization successful. Complete the secondary check to finalize your server permission set.
               </p>
-              <button 
-                onClick={() => handleCheckpoint(2)}
-                className="group flex items-center justify-center space-x-5 bg-white text-black font-black py-6 px-16 rounded-[2rem] transition-all shadow-2xl hover:bg-gray-200 active:scale-95 w-full max-w-sm mx-auto"
-              >
-                <span className="text-sm uppercase tracking-[0.3em]">Launch Step 2</span>
-                <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-              </button>
+              
+              <div className="space-y-4 max-w-sm mx-auto">
+                <button 
+                  onClick={() => handleCheckpoint(2)}
+                  className="group flex items-center justify-center space-x-5 bg-white text-black font-black py-6 px-16 rounded-[2rem] transition-all shadow-2xl hover:bg-gray-200 active:scale-95 w-full"
+                >
+                  <span className="text-sm uppercase tracking-[0.3em]">Launch Step 2</span>
+                  <ChevronRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                </button>
+                {session.lastStep === 2 && (
+                  <button onClick={manualSync} className="text-xs font-bold text-indigo-400 hover:text-white transition-colors uppercase tracking-widest flex items-center justify-center gap-2 mx-auto pt-4">
+                    <RefreshCw className="w-3.5 h-3.5" /> Already clicked? Sync Status
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
-            /* STEP 3 UI (SUCCESS) */
+            /* SUCCESS */
             <div className="w-full animate-in zoom-in-95 duration-700">
               <div className="w-28 h-28 bg-green-500/10 rounded-[3rem] flex items-center justify-center mx-auto mb-10 border border-green-500/20 shadow-[0_0_60px_rgba(34,197,94,0.2)] animate-float">
                 <CheckCircle2 className="w-14 h-14 text-green-500" />
               </div>
               <h3 className="text-6xl font-black text-white mb-2 uppercase tracking-tighter italic leading-none">VERIFIED</h3>
-              <p className="text-gray-500 text-[12px] font-black uppercase tracking-[0.5em] mb-12 tracking-widest">Step 3: Verification Success</p>
+              <p className="text-gray-500 text-[12px] font-black uppercase tracking-[0.5em] mb-12 tracking-widest">Stage 03: Verification Success</p>
               
               <div className="bg-indigo-600/10 border-2 border-indigo-500/20 rounded-[2.5rem] p-10 mb-12 flex flex-col md:flex-row items-center gap-8 text-left max-w-xl mx-auto shadow-2xl relative overflow-hidden group">
-                <div className="absolute -top-4 -right-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                  <Fingerprint className="w-32 h-32 text-white" />
-                </div>
                 <div className="bg-indigo-600 p-6 rounded-[2rem] shadow-xl shadow-indigo-600/40 z-10">
                   <Ticket className="w-12 h-12 text-white" />
                 </div>
                 <div className="z-10">
                   <p className="text-white font-black text-3xl italic uppercase tracking-tighter leading-none mb-3 underline decoration-indigo-500 underline-offset-4">GO CHECK SERVER TICKET</p>
                   <p className="text-sm text-gray-400 leading-relaxed font-semibold">
-                    Your session is now fully authenticated. Please <span className="text-white">return to your Discord support ticket</span>. Our bot is currently assigning your server roles.
+                    Your identity is now validated. Please <span className="text-white">return to Discord</span>. Our system is currently mapping your permissions.
                   </p>
                 </div>
               </div>
@@ -266,12 +311,11 @@ const SessionPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Modern Footer Decoration */}
       <div className="mt-16 flex items-center justify-center space-x-10 text-gray-600 opacity-40">
         <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white/10"></div>
         <div className="flex items-center space-x-4">
           <Shield className="w-5 h-5" />
-          <span className="text-[10px] font-black uppercase tracking-[0.6em]">SECURE IDENTITY PORTAL v2.5</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.6em]">SECURE IDENTITY GATEWAY v2.5</span>
         </div>
         <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white/10"></div>
       </div>
