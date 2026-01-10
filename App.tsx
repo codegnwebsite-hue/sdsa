@@ -1,12 +1,11 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import SessionPage from './pages/SessionPage';
 import VerifyHandler from './pages/VerifyHandler';
-// Added missing ApiGenerate import
 import ApiGenerate from './pages/ApiGenerate';
 
 const App: React.FC = () => {
@@ -23,6 +22,8 @@ const App: React.FC = () => {
             <Route path="/verify" element={<VerifyHandler />} />
             {/* API Generation Endpoint */}
             <Route path="/api/generate" element={<ApiGenerate />} />
+            {/* Catch-all route to handle environment-specific paths or 404s */}
+            <Route path="*" element={<Home />} />
           </Routes>
         </main>
         <Footer />

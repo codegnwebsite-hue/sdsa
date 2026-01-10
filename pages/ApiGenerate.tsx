@@ -25,13 +25,13 @@ const ApiGenerate: React.FC = () => {
     }
 
     // Generate a stateless token (Base64 encoded string containing data)
-    // Format: user_ [Base64(uid:service:timestamp)]
     const dataString = `${uid}:${service}:${Date.now()}`;
     const token = `u_${btoa(dataString).replace(/=/g, '')}`;
     
     const protocol = window.location.protocol;
     const host = window.location.host;
-    const cleanUrl = `${protocol}//${host}/v/${token}`;
+    // Using /#/ for HashRouter compatibility
+    const cleanUrl = `${protocol}//${host}/#/v/${token}`;
 
     setResponse({
       status: "success",
@@ -45,7 +45,7 @@ const ApiGenerate: React.FC = () => {
 
   const botCodeJS = `// Discord.js Example
 const axios = require('axios');
-const response = await axios.get('https://${window.location.host}/api/generate', {
+const response = await axios.get('https://${window.location.host}/#/api/generate', {
     params: {
         uid: interaction.user.id,
         key: '${APP_CONFIG.API_SECRET}',
