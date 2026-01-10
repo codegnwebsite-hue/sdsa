@@ -133,10 +133,10 @@ const SessionPage: React.FC = () => {
 
   const getGlowColor = (plan?: string) => {
     const p = (plan || 'Free').toLowerCase();
-    if (p.includes('booster')) return 'bg-pink-400';
-    if (p.includes('premium')) return 'bg-cyan-400';
-    if (p.includes('basic')) return 'bg-amber-600'; // Neon-style brown/amber
-    return 'bg-green-400';
+    if (p.includes('booster')) return 'bg-pink-500';
+    if (p.includes('premium')) return 'bg-cyan-500';
+    if (p.includes('basic')) return 'bg-amber-600'; 
+    return 'bg-green-500';
   };
 
   if (loading) return (
@@ -171,10 +171,11 @@ const SessionPage: React.FC = () => {
       <div className="relative w-full">
         {/* 
             SUBTLE NEON GLOW 
-            - Scaled and centered strictly behind the glass panel
-            - Pointer-events-none and -z-10 to stay purely in background
+            - Matches the panel's dimensions (inset-0)
+            - Centered behind the glass panel
+            - Higher blur for soft diffusion
         */}
-        <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] blur-[140px] rounded-full opacity-40 pointer-events-none -z-10 ${getGlowColor(session.plan)}`}></div>
+        <div className={`absolute inset-0 blur-[100px] rounded-[2.5rem] opacity-30 pointer-events-none -z-10 ${getGlowColor(session.plan)}`}></div>
         
         <div className="glass rounded-[2.5rem] overflow-hidden shadow-2xl border-white/5 relative p-8 w-full z-10">
           
