@@ -19,7 +19,7 @@ const ApiGenerate: React.FC = () => {
 
       setLoading(true);
       try {
-        const res = await fetch(`/api/generate?uid=${uid}&key=${providedKey}&service=${searchParams.get('service') || 'Verification'}&name=${searchParams.get('name') || ''}&avatar=${searchParams.get('avatar') || ''}`);
+        const res = await fetch(`/api/generate?uid=${uid}&key=${providedKey}&service=${searchParams.get('service') || 'Verification'}&plan=${searchParams.get('plan') || 'Free'}&name=${searchParams.get('name') || ''}&avatar=${searchParams.get('avatar') || ''}`);
         const data = await res.json();
         setResponse(data);
       } catch (e) {
@@ -37,7 +37,7 @@ const ApiGenerate: React.FC = () => {
   const botCodeJS = `// Discord.js Bot Integration
 const axios = require('axios');
 
-async function getVerifyLink(user) {
+async function getVerifyLink(user, serviceName = 'Crunchyroll', planType = 'Free') {
     try {
         const res = await axios.get('${botEndpoint}', {
             params: {
@@ -45,7 +45,8 @@ async function getVerifyLink(user) {
                 name: user.username,
                 avatar: user.displayAvatarURL({ extension: 'png' }),
                 key: '${APP_CONFIG.API_SECRET}', 
-                service: 'Server Access'
+                service: serviceName,
+                plan: planType
             }
         });
         return res.data.data.verification_url;
@@ -94,7 +95,7 @@ async function getVerifyLink(user) {
             </div>
             <div className="text-sm">
               <p className="font-bold text-indigo-400">Personalization Active</p>
-              <p className="text-indigo-400/60 text-xs">Name and Avatar are now supported.</p>
+              <p className="text-indigo-400/60 text-xs">Service Name and Plan labeling enabled.</p>
             </div>
           </div>
         </div>
@@ -111,7 +112,7 @@ async function getVerifyLink(user) {
           <pre className="bg-[#0a0a0b] border border-white/5 p-8 rounded-3xl overflow-x-auto text-indigo-400 font-mono text-sm shadow-2xl min-h-[160px]">
             {response ? JSON.stringify(response, null, 4) : `// TEST YOUR CONNECTION:
 // Open this link in a new tab to see if your Vercel API is working:
-// ${botEndpoint}?uid=12345&key=${APP_CONFIG.API_SECRET}&name=TestUser`}
+// ${botEndpoint}?uid=12345&key=${APP_CONFIG.API_SECRET}&service=Crunchyroll&plan=Free&name=TestUser`}
           </pre>
           {!response && (
              <div className="flex items-center space-x-2 text-yellow-500/60 text-[10px] font-bold uppercase tracking-widest px-2">

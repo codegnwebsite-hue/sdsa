@@ -13,6 +13,7 @@ interface SessionData {
   userName?: string;
   userAvatar?: string;
   service?: string;
+  plan?: string;
   createdAt: number;
 }
 
@@ -39,19 +40,21 @@ const SessionPage: React.FC = () => {
   useEffect(() => {
     if (!slug) return;
     
-    let metaData: { uid: string, service: string, createdAt: number, userName?: string, userAvatar?: string } | null = null;
+    let metaData: { uid: string, service: string, createdAt: number, userName?: string, plan?: string, userAvatar?: string } | null = null;
     if (slug.startsWith('u_')) {
       const base64Part = slug.substring(2);
       const decoded = safeAtob(base64Part);
       if (decoded) {
         const parts = decoded.split(':');
         if (parts.length >= 3) {
+          // Token Format: uid:service:timestamp:name:plan:avatar
           metaData = {
             uid: parts[0],
             service: parts[1],
             createdAt: parseInt(parts[2]) || Date.now(),
             userName: parts[3] || '',
-            userAvatar: parts.slice(4).join(':') || ''
+            plan: parts[4] || 'Free',
+            userAvatar: parts.slice(5).join(':') || ''
           };
         }
       }
@@ -74,6 +77,7 @@ const SessionPage: React.FC = () => {
         userName: metaData.userName || storedData.userName,
         userAvatar: metaData.userAvatar || storedData.userAvatar,
         service: metaData.service,
+        plan: metaData.plan,
         createdAt: metaData.createdAt
       };
     } else {
@@ -82,6 +86,7 @@ const SessionPage: React.FC = () => {
         userName: metaData.userName,
         userAvatar: metaData.userAvatar,
         service: metaData.service,
+        plan: metaData.plan,
         createdAt: metaData.createdAt,
         cp1: false,
         cp2: false
@@ -153,7 +158,7 @@ const SessionPage: React.FC = () => {
     <div className="max-w-xl mx-auto px-6 py-12 md:py-20">
       <div className="glass rounded-[2.5rem] overflow-hidden shadow-2xl border-white/5 relative p-8">
         
-        {/* Compact Header: Avatar + Name */}
+        {/* Compact Header: Avatar + Name + Service Badge */}
         <div className="flex items-center justify-between mb-8 pb-6 border-b border-white/5">
           <div className="flex items-center space-x-4">
             <div className="relative">
@@ -172,10 +177,19 @@ const SessionPage: React.FC = () => {
               <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0a0a0b] shadow-[0_0_8px_#22c55e]"></div>
             </div>
             <div>
-              <h3 className="text-white font-black text-sm uppercase tracking-tight italic">
-                {session.userName || "Unknown User"}
-              </h3>
-              <span className="text-[9px] text-indigo-400 font-bold uppercase tracking-widest">Verification Pending</span>
+              <div className="flex items-center gap-2 mb-0.5">
+                <h3 className="text-white font-black text-sm uppercase tracking-tight italic">
+                  {session.userName || "Unknown User"}
+                </h3>
+                {session.service && session.service !== 'Verification' && (
+                  <div className="flex items-center bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-md">
+                    <span className="text-[8px] font-black text-indigo-400 uppercase tracking-tighter">{session.service}</span>
+                    <span className="mx-1 text-[8px] text-gray-600">|</span>
+                    <span className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">{session.plan || 'Free'}</span>
+                  </div>
+                )}
+              </div>
+              <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest">Verification Pending</span>
             </div>
           </div>
           
