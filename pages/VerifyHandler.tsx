@@ -43,7 +43,7 @@ const VerifyHandler: React.FC = () => {
     const stepStr = searchParams.get('step');
     const step = stepStr ? parseInt(stepStr) : 0;
     
-    // Fallback to localStorage if search params are missing (some shorteners strip query params)
+    // Fallback to localStorage if search params are missing
     const activeSlug = slugFromUrl || localStorage.getItem('active_session_slug');
 
     if (!activeSlug || isNaN(step) || step === 0) {
@@ -62,33 +62,51 @@ const VerifyHandler: React.FC = () => {
     const session = JSON.parse(stored);
     const now = Date.now();
     
+    // 1. Session Expiry Check (30 min window)
     const sessionAge = now - (session.createdAt || 0);
     const isSessionValid = sessionAge < APP_CONFIG.VERIFY_WINDOW_MS;
-    
-    // For manual sync or automatic return, we just need to ensure the session exists and isn't expired
-    if (isSessionValid) {
-      const updated = {
-        ...session,
-        [`cp${step}`]: true,
-        // Reset these to allow for clean state on the session page
-        lastClickTime: undefined,
-        lastStep: undefined 
-      };
-      
-      localStorage.setItem(sessionKey, JSON.stringify(updated));
 
-      // If both checkpoints are cleared, notify Discord
-      if (updated.cp1 && updated.cp2) {
-        sendWebhook(updated.uid || "Unknown", activeSlug);
-      }
-
-      // Return user back to the Identity Card
-      setTimeout(() => {
-        navigate(`/v/${activeSlug}`);
-      }, 1200);
-    } else {
+    if (!isSessionValid) {
       setError("Session buffer expired. Please generate a new link in Discord.");
+      return;
     }
+
+    // 2. Handshake Validation (The Bug Fix)
+    // We check if the user actually initiated this specific step from the website.
+    // If they manually navigate here, session.lastStep won't match or session.lastClickTime will be missing.
+    const isCorrectStep = session.lastStep === step;
+    
+    // Verify the redirect happened recently (within 15 minutes to account for slow link shorteners)
+    const clickAge = now - (session.lastClickTime || 0);
+    const isValidHandshake = session.lastClickTime && clickAge < (15 * 60 * 1000);
+
+    if (!isCorrectStep || !isValidHandshake) {
+      setError("Unauthorized access attempt. Verification must be initiated from the portal.");
+      return;
+    }
+    
+    // If all checks pass, proceed with updating state
+    const updated = {
+      ...session,
+      [`cp${step}`]: true,
+      // CRITICAL: Reset these to prevent replay of the same verify URL
+      lastClickTime: undefined,
+      lastStep: undefined 
+    };
+    
+    localStorage.setItem(sessionKey, JSON.stringify(updated));
+
+    // If both checkpoints are cleared, notify Discord
+    if (updated.cp1 && updated.cp2) {
+      sendWebhook(updated.uid || "Unknown", activeSlug);
+    }
+
+    // Return user back to the Identity Card
+    const timer = setTimeout(() => {
+      navigate(`/v/${activeSlug}`);
+    }, 1200);
+
+    return () => clearTimeout(timer);
   }, [location, navigate]);
 
   return (
@@ -103,8 +121,8 @@ const VerifyHandler: React.FC = () => {
                <Shield className="w-8 h-8 text-indigo-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             </div>
             <div>
-              <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white mb-2">Establishing Handshake</h2>
-              <p className="text-gray-500 text-[11px] font-black uppercase tracking-[0.4em]">Syncing sequence with primary gateway...</p>
+              <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white mb-2">Syncing Sequence</h2>
+              <p className="text-gray-500 text-[11px] font-black uppercase tracking-[0.4em]">Validating handshake with primary gateway...</p>
             </div>
             <div className="w-64 h-1.5 bg-white/5 rounded-full mx-auto overflow-hidden">
                <div className="h-full bg-indigo-600 animate-[loading_1.5s_ease-in-out_infinite]" style={{ width: '40%' }}></div>
@@ -116,7 +134,7 @@ const VerifyHandler: React.FC = () => {
               <AlertCircle className="w-10 h-10 text-red-500" />
             </div>
             <div>
-              <h2 className="text-3xl font-black uppercase tracking-tighter italic text-white mb-2">Protocol Violation</h2>
+              <h2 className="text-3xl font-black uppercase tracking-tighter italic text-white mb-2">Access Denied</h2>
               <p className="text-red-500/70 text-sm font-bold tracking-tight px-10 leading-relaxed">{error}</p>
             </div>
             <button 
