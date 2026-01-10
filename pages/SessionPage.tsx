@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle2, Lock, Shield, Loader2, Ticket, AlertCircle, Home, Clock, ChevronRight, User, Terminal, Key } from 'lucide-react';
+import { CheckCircle2, Shield, Loader2, Ticket, AlertCircle, Home, Clock, ChevronRight, User, Terminal, Key, Zap } from 'lucide-react';
 import { APP_CONFIG } from '../constants';
 
 interface SessionData {
@@ -24,7 +24,7 @@ const SessionPage: React.FC = () => {
   useEffect(() => {
     if (!slug) return;
     
-    // Auth directly from the Slug token to prevent resets
+    // Auth directly from the Slug token to prevent resets on refresh
     let metaData: { uid: string, service: string, createdAt: number } | null = null;
     if (slug.startsWith('u_')) {
       try {
@@ -53,7 +53,7 @@ const SessionPage: React.FC = () => {
       const storedData = JSON.parse(stored);
       currentSession = {
         ...storedData,
-        // Always enforce metadata from URL to keep timer persistent
+        // Always enforce metadata from URL to keep timer persistent and authority solid
         uid: metaData.uid,
         service: metaData.service,
         createdAt: metaData.createdAt
@@ -77,8 +77,10 @@ const SessionPage: React.FC = () => {
   useEffect(() => {
     if (!session || isExpired) return;
     const tick = () => {
-      // Calculate remaining time strictly from session.createdAt
-      const remaining = APP_CONFIG.VERIFY_WINDOW_MS - (Date.now() - session.createdAt);
+      // Calculate remaining time strictly from session.createdAt (the token timestamp)
+      const elapsed = Date.now() - session.createdAt;
+      const remaining = APP_CONFIG.VERIFY_WINDOW_MS - elapsed;
+      
       if (remaining <= 0) { 
         setIsExpired(true); 
         setTimeLeft(0); 
@@ -104,53 +106,69 @@ const SessionPage: React.FC = () => {
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="w-12 h-12 animate-spin text-indigo-500" /></div>;
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+      <Loader2 className="w-12 h-12 animate-spin text-indigo-500" />
+      <span className="text-xs font-black uppercase tracking-widest text-gray-500">Initializing Session...</span>
+    </div>
+  );
 
   if (!session || isExpired) {
     return (
       <div className="max-w-md mx-auto px-6 py-20 text-center">
         <div className="glass p-12 rounded-[2.5rem] border-red-500/20 shadow-2xl">
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-8 opacity-40" />
-          <h2 className="text-2xl font-black italic uppercase mb-4 tracking-tighter">{isExpired ? "Session Expired" : "Identity Null"}</h2>
-          <p className="text-gray-500 text-sm mb-10 leading-relaxed px-4">Verification sessions are valid for 30 minutes for your security. Please request a new link from Discord.</p>
-          <Link to="/" className="inline-flex items-center space-x-3 bg-white text-black font-black py-4 px-10 rounded-2xl text-xs uppercase tracking-widest shadow-xl">
+          <h2 className="text-2xl font-black italic uppercase mb-4 tracking-tighter">
+            {isExpired ? "Session Expired" : "Access Denied"}
+          </h2>
+          <p className="text-gray-500 text-sm mb-10 leading-relaxed px-4">
+            Verification sessions are valid for 30 minutes. Please return to Discord to generate a fresh link.
+          </p>
+          <Link to="/" className="inline-flex items-center space-x-3 bg-white text-black font-black py-4 px-10 rounded-2xl text-xs uppercase tracking-widest shadow-xl hover:bg-gray-200 transition-colors">
             <Home className="w-4 h-4" />
-            <span>Back to Portal</span>
+            <span>Portal Home</span>
           </Link>
         </div>
       </div>
     );
   }
 
-  const isComplete = session.cp1 && session.cp2;
-
   return (
-    <div className="max-w-3xl mx-auto px-6 py-16">
-      {/* Rectangular Horizontal Identity Card */}
-      <div className="glass rounded-[2rem] overflow-hidden shadow-2xl border-white/5 relative flex flex-col md:flex-row min-h-[300px]">
+    <div className="max-w-4xl mx-auto px-6 py-16">
+      {/* Horizontal Identity Card Layout */}
+      <div className="glass rounded-[2rem] overflow-hidden shadow-2xl border-white/5 relative flex flex-col md:flex-row min-h-[340px]">
         
-        {/* Left Sidebar - Meta & Time (1/3 width) */}
-        <div className="bg-white/[0.03] border-b md:border-b-0 md:border-r border-white/5 p-8 flex flex-col justify-between w-full md:w-72">
-          <div className="space-y-6">
-            <div className="flex items-center space-x-3 mb-2">
-              <div className="bg-indigo-600 p-2 rounded-lg">
+        {/* Left Sidebar - Identity Metadata (1/3 breadth) */}
+        <div className="bg-white/[0.03] border-b md:border-b-0 md:border-r border-white/5 p-8 flex flex-col justify-between w-full md:w-80">
+          <div className="space-y-8">
+            <div className="flex items-center space-x-3">
+              <div className="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-600/30">
                 <Shield className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-white italic">Session ID</span>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white italic">Identity Card</span>
+                <span className="text-[8px] text-indigo-400 font-bold uppercase tracking-widest">v2.5 Protocol</span>
+              </div>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div className="flex flex-col">
-                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Authenticated UID</span>
-                <span className="text-sm font-mono font-bold text-indigo-400">{session.uid}</span>
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                  <User className="w-3 h-3" /> Authenticated UID
+                </span>
+                <span className="text-sm font-mono font-bold text-white bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">{session.uid}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Target Service</span>
-                <span className="text-sm font-bold text-white uppercase italic">{session.service}</span>
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                  <Zap className="w-3 h-3" /> Target Service
+                </span>
+                <span className="text-sm font-bold text-white uppercase italic tracking-tight">{session.service}</span>
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-1">Session Key</span>
-                <div className="flex items-center space-x-2 text-[10px] font-mono text-gray-400 bg-black/40 p-2 rounded-lg border border-white/5 truncate">
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                  <Terminal className="w-3 h-3" /> Session Key
+                </span>
+                <div className="flex items-center space-x-2 text-[10px] font-mono text-indigo-400/70 bg-black/40 p-2.5 rounded-lg border border-white/5 overflow-hidden">
                    <Key className="w-3 h-3 flex-shrink-0" />
                    <span className="truncate">{slug}</span>
                 </div>
@@ -158,93 +176,97 @@ const SessionPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-white/5">
-            <div className="flex items-center justify-between mb-2">
-               <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Time Remaining</span>
-               <Clock className={`w-3 h-3 ${timeLeft < 300000 ? 'text-red-500 animate-pulse' : 'text-indigo-400'}`} />
+          <div className="mt-10 pt-6 border-t border-white/10">
+            <div className="flex items-center justify-between mb-2.5">
+               <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Time Buffer</span>
+               <Clock className={`w-3.5 h-3.5 ${timeLeft < 300000 ? 'text-red-500 animate-pulse' : 'text-indigo-400'}`} />
             </div>
-            <div className={`text-2xl font-mono font-black ${timeLeft < 300000 ? 'text-red-500' : 'text-white'}`}>
+            <div className={`text-3xl font-mono font-black tracking-tighter ${timeLeft < 300000 ? 'text-red-500' : 'text-white'}`}>
               {formatTime(timeLeft)}
             </div>
-            <div className="w-full h-1 bg-white/5 rounded-full mt-3 overflow-hidden">
+            <div className="w-full h-1.5 bg-white/5 rounded-full mt-4 overflow-hidden">
                <div 
-                 className={`h-full transition-all duration-1000 ${timeLeft < 300000 ? 'bg-red-500 shadow-[0_0_10px_#ef4444]' : 'bg-indigo-500 shadow-[0_0_10px_#6366f1]'}`}
+                 className={`h-full transition-all duration-1000 ${timeLeft < 300000 ? 'bg-red-600 shadow-[0_0_12px_#dc2626]' : 'bg-indigo-600 shadow-[0_0_12px_#4f46e5]'}`}
                  style={{ width: `${(timeLeft / APP_CONFIG.VERIFY_WINDOW_MS) * 100}%` }}
                />
             </div>
           </div>
         </div>
 
-        {/* Right Content Area - Action & Sequence (2/3 width) */}
-        <div className="flex-1 p-10 flex flex-col justify-center items-center text-center">
+        {/* Right Content Area - Action & Sequential Steps (2/3 breadth) */}
+        <div className="flex-1 p-10 flex flex-col justify-center items-center text-center bg-gradient-to-br from-transparent to-white/[0.01]">
           {!session.cp1 ? (
             /* STEP 1 */
-            <div className="w-full animate-in fade-in slide-in-from-right-4 duration-500">
-              <div className="inline-block px-3 py-1 rounded bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-4 italic">Step 01 / Phase 1</div>
-              <h3 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter italic">Initial Checkpoint</h3>
-              <p className="text-gray-400 text-sm mb-10 leading-relaxed max-w-sm mx-auto">First layer of verification required. Please click below to initiate your security handshake.</p>
+            <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="inline-block px-4 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[10px] font-black text-indigo-400 uppercase tracking-[0.4em] mb-6 italic">Sequence 01</div>
+              <h3 className="text-4xl font-black text-white mb-4 uppercase tracking-tighter italic leading-none">Primary Checkpoint</h3>
+              <p className="text-gray-400 text-sm mb-10 leading-relaxed max-w-sm mx-auto font-medium">
+                Our initial security filter requires a manual validation. Proceed to Step 1 to authorize your session.
+              </p>
               <button 
                 onClick={() => handleCheckpoint(1)}
-                className="group flex items-center justify-center space-x-4 bg-white text-black font-black py-5 px-12 rounded-2xl transition-all shadow-xl hover:bg-gray-200 active:scale-95 w-full max-w-xs mx-auto"
+                className="group flex items-center justify-center space-x-4 bg-white text-black font-black py-5 px-14 rounded-2xl transition-all shadow-2xl hover:bg-gray-200 active:scale-95 w-full max-w-xs mx-auto"
               >
-                <span className="text-sm uppercase tracking-widest">Begin Step 1</span>
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <span className="text-sm uppercase tracking-[0.2em]">Begin Step 1</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
               </button>
             </div>
           ) : !session.cp2 ? (
             /* STEP 2 */
-            <div className="w-full animate-in fade-in slide-in-from-right-4 duration-500">
-              <div className="inline-block px-3 py-1 rounded bg-purple-500/10 border border-purple-500/20 text-[10px] font-black text-purple-400 uppercase tracking-[0.3em] mb-4 italic">Step 02 / Final Phase</div>
-              <h3 className="text-3xl font-black text-white mb-4 uppercase tracking-tighter italic">Final Authorization</h3>
-              <p className="text-gray-400 text-sm mb-10 leading-relaxed max-w-sm mx-auto">Phase 1 accepted. Confirm your hardware signature to synchronize your roles in the server.</p>
+            <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500">
+              <div className="inline-block px-4 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-[10px] font-black text-purple-400 uppercase tracking-[0.4em] mb-6 italic">Sequence 02</div>
+              <h3 className="text-4xl font-black text-white mb-4 uppercase tracking-tighter italic leading-none">Final Authorization</h3>
+              <p className="text-gray-400 text-sm mb-10 leading-relaxed max-w-sm mx-auto font-medium">
+                Checkpoint 1 verified. Please complete the final layer of authorization to synchronize your permissions.
+              </p>
               <button 
                 onClick={() => handleCheckpoint(2)}
-                className="group flex items-center justify-center space-x-4 bg-white text-black font-black py-5 px-12 rounded-2xl transition-all shadow-xl hover:bg-gray-200 active:scale-95 w-full max-w-xs mx-auto"
+                className="group flex items-center justify-center space-x-4 bg-white text-black font-black py-5 px-14 rounded-2xl transition-all shadow-2xl hover:bg-gray-200 active:scale-95 w-full max-w-xs mx-auto"
               >
-                <span className="text-sm uppercase tracking-widest">Complete Step 2</span>
-                <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <span className="text-sm uppercase tracking-[0.2em]">Complete Step 2</span>
+                <ChevronRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform" />
               </button>
             </div>
           ) : (
             /* STEP 3 (SUCCESS) */
-            <div className="w-full animate-in zoom-in-95 duration-500">
-              <div className="w-20 h-20 bg-green-500/10 rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-green-500/20 shadow-[0_0_40px_rgba(34,197,94,0.1)]">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
+            <div className="w-full animate-in zoom-in-95 duration-700">
+              <div className="w-24 h-24 bg-green-500/10 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 border border-green-500/20 shadow-[0_0_50px_rgba(34,197,94,0.15)] animate-float">
+                <CheckCircle2 className="w-12 h-12 text-green-500" />
               </div>
-              <h3 className="text-4xl font-black text-white mb-2 uppercase tracking-tighter italic">AUTHENTICATED</h3>
-              <p className="text-gray-500 text-[11px] font-bold uppercase tracking-[0.3em] mb-8">Identity Sequence Complete</p>
+              <h3 className="text-5xl font-black text-white mb-2 uppercase tracking-tighter italic leading-none">STEP 3 COMPLETE</h3>
+              <p className="text-gray-500 text-[11px] font-black uppercase tracking-[0.4em] mb-10">Verification Successful</p>
               
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-8 flex items-center space-x-6 text-left max-w-md mx-auto">
-                <div className="bg-indigo-600/20 p-3 rounded-xl">
-                  <Ticket className="w-8 h-8 text-indigo-400" />
+              <div className="bg-indigo-600/10 border-2 border-indigo-500/20 rounded-[2rem] p-8 mb-10 flex flex-col md:flex-row items-center gap-6 text-left max-w-lg mx-auto shadow-xl">
+                <div className="bg-indigo-600 p-4 rounded-2xl shadow-lg shadow-indigo-600/40">
+                  <Ticket className="w-10 h-10 text-white" />
                 </div>
                 <div>
-                  <p className="text-white font-black text-lg italic uppercase tracking-tighter leading-none mb-1">Check Server Ticket</p>
-                  <p className="text-xs text-gray-500 leading-relaxed font-medium">
-                    Please return to your <span className="text-white">Discord Ticket</span> immediately. Our bot is currently assigning your new permissions.
+                  <p className="text-white font-black text-2xl italic uppercase tracking-tighter leading-none mb-2">Check Server Ticket</p>
+                  <p className="text-sm text-gray-400 leading-relaxed font-semibold">
+                    Your identity is now synchronized. Please <span className="text-white">return to your Discord support ticket</span>. Our automation is currently updating your roles.
                   </p>
                 </div>
               </div>
 
               <a 
                 href={APP_CONFIG.DISCORD_INVITE}
-                className="inline-flex items-center space-x-3 bg-[#5865F2] hover:bg-[#4752C4] text-white font-black py-5 px-12 rounded-2xl transition-all active:scale-95 shadow-xl shadow-[#5865F2]/20 text-xs uppercase tracking-widest"
+                className="inline-flex items-center space-x-4 bg-[#5865F2] hover:bg-[#4752C4] text-white font-black py-5 px-16 rounded-2xl transition-all active:scale-95 shadow-2xl shadow-[#5865F2]/30 text-xs uppercase tracking-[0.2em]"
               >
-                <span>Back to Discord</span>
+                <span>Return to Discord</span>
               </a>
             </div>
           )}
         </div>
       </div>
 
-      {/* Security Footer */}
-      <div className="mt-8 flex items-center justify-center space-x-4 text-gray-600">
-        <div className="h-[1px] w-12 bg-white/10"></div>
-        <div className="flex items-center space-x-2">
+      {/* Security Breadth Footer */}
+      <div className="mt-12 flex items-center justify-center space-x-6 text-gray-600 opacity-60">
+        <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white/10"></div>
+        <div className="flex items-center space-x-3">
           <Shield className="w-4 h-4" />
-          <span className="text-[10px] font-black uppercase tracking-[0.4em]">AES-256 SESSION PROTECTION</span>
+          <span className="text-[10px] font-black uppercase tracking-[0.5em]">AES-256 ENCRYPTED GATEWAY</span>
         </div>
-        <div className="h-[1px] w-12 bg-white/10"></div>
+        <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white/10"></div>
       </div>
     </div>
   );
