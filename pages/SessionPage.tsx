@@ -10,6 +10,8 @@ interface SessionData {
   lastClickTime?: number;
   lastStep?: number;
   uid?: string;
+  userName?: string;
+  userAvatar?: string;
   service?: string;
   createdAt: number;
 }
@@ -40,17 +42,21 @@ const SessionPage: React.FC = () => {
   useEffect(() => {
     if (!slug) return;
     
-    let metaData: { uid: string, service: string, createdAt: number } | null = null;
+    let metaData: { uid: string, service: string, createdAt: number, userName?: string, userAvatar?: string } | null = null;
     if (slug.startsWith('u_')) {
       const base64Part = slug.substring(2);
       const decoded = safeAtob(base64Part);
       if (decoded) {
+        // Updated split logic to handle name and avatar
         const parts = decoded.split(':');
         if (parts.length >= 3) {
           metaData = {
             uid: parts[0],
             service: parts[1],
-            createdAt: parseInt(parts[2]) || Date.now()
+            createdAt: parseInt(parts[2]) || Date.now(),
+            userName: parts[3] || '',
+            // Avatar URL might contain colons, join the rest
+            userAvatar: parts.slice(4).join(':') || ''
           };
         }
       }
@@ -71,12 +77,16 @@ const SessionPage: React.FC = () => {
       currentSession = {
         ...storedData,
         uid: metaData.uid,
+        userName: metaData.userName || storedData.userName,
+        userAvatar: metaData.userAvatar || storedData.userAvatar,
         service: metaData.service,
         createdAt: metaData.createdAt
       };
     } else {
       currentSession = {
         uid: metaData.uid,
+        userName: metaData.userName,
+        userAvatar: metaData.userAvatar,
         service: metaData.service,
         createdAt: metaData.createdAt,
         cp1: false,
@@ -178,26 +188,41 @@ const SessionPage: React.FC = () => {
             </div>
             
             <div className="space-y-6">
+              {/* User Identity View */}
+              <div className="flex flex-col items-center py-4 bg-white/[0.02] border border-white/5 rounded-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-2">
+                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_8px_#22c55e]"></div>
+                </div>
+                {session.userAvatar ? (
+                  <img 
+                    src={session.userAvatar} 
+                    alt="User" 
+                    className="w-20 h-20 rounded-full border-2 border-indigo-500/50 mb-4 shadow-xl object-cover"
+                    onError={(e) => { (e.target as any).src = 'https://cdn.discordapp.com/embed/avatars/0.png' }}
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-indigo-600/20 rounded-full flex items-center justify-center border-2 border-indigo-500/50 mb-4 shadow-xl">
+                    <User className="w-10 h-10 text-indigo-400" />
+                  </div>
+                )}
+                <span className="text-lg font-black text-white italic uppercase tracking-tighter">
+                  {session.userName || "Unknown Entity"}
+                </span>
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-[0.3em] mt-1">STATUS: PENDING</span>
+              </div>
+
               <div className="flex flex-col">
                 <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                  <User className="w-3.5 h-3.5" /> Authenticated UID
+                  <Fingerprint className="w-3.5 h-3.5" /> Technical ID
                 </span>
-                <span className="text-sm font-mono font-bold text-white bg-white/5 px-4 py-2.5 rounded-xl border border-white/5">{session.uid}</span>
+                <span className="text-[11px] font-mono font-bold text-gray-400 bg-white/5 px-4 py-2 rounded-xl border border-white/5 truncate">{session.uid}</span>
               </div>
+
               <div className="flex flex-col">
                 <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-2">
                   <Zap className="w-3.5 h-3.5" /> Instance
                 </span>
                 <span className="text-sm font-bold text-white uppercase italic tracking-tight">{session.service}</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1.5 flex items-center gap-2">
-                  <Terminal className="w-3.5 h-3.5" /> Session Key
-                </span>
-                <div className="flex items-center space-x-2 text-[10px] font-mono text-indigo-400/80 bg-black/40 p-3 rounded-xl border border-white/5 overflow-hidden">
-                   <Key className="w-3 h-3 flex-shrink-0" />
-                   <span className="truncate">{slug}</span>
-                </div>
               </div>
             </div>
           </div>

@@ -14,7 +14,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // 2. Extract and Clean Parameters
-  const { uid, key, service = 'Verification' } = req.query;
+  const { uid, key, service = 'Verification', name = '', avatar = '' } = req.query;
   
   // Use the environment variable from Vercel
   const SYSTEM_SECRET = (process.env.VITE_API_SECRET || "YOUR_SECRET_KEY").trim();
@@ -42,7 +42,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
 
   // 5. Generate Token
   const timestamp = Date.now();
-  const dataString = `${uid}:${service}:${timestamp}`;
+  // Include name and avatar in the data string. Use | as a separator for the avatar URL to avoid colon issues
+  const dataString = `${uid}:${service}:${timestamp}:${name}:${avatar}`;
   
   // Generate URL-safe base64 (replace + with - and / with _)
   const base64 = Buffer.from(dataString).toString('base64');
