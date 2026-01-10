@@ -19,10 +19,10 @@ const VerifyHandler: React.FC = () => {
         fields: [
           { name: "User ID", value: `<@${uid}> (${uid})`, inline: true },
           { name: "Session Token", value: `\`${slug}\``, inline: true },
-          { name: "Verification Status", value: "COMPLETED", inline: false }
+          { name: "Status", value: "AUTHENTICATED", inline: false }
         ],
         timestamp: new Date().toISOString(),
-        footer: { text: "VerifyHub Pro | Secure Gateway" }
+        footer: { text: "VerifyHub Pro Gateway" }
       }]
     };
 
@@ -44,7 +44,7 @@ const VerifyHandler: React.FC = () => {
     const step = stepStr ? parseInt(stepStr) : 0;
 
     if (!activeSlug || isNaN(step)) {
-      setError("Session link broken. Use the link provided by our Discord bot.");
+      setError("Session link broken. Please return to Discord.");
       return;
     }
 
@@ -52,18 +52,17 @@ const VerifyHandler: React.FC = () => {
     const stored = localStorage.getItem(sessionKey);
 
     if (!stored) {
-      setError("Session expired or invalid. Please request a new link.");
+      setError("Session context lost. Please return to the verification page.");
       return;
     }
 
     const session = JSON.parse(stored);
     const now = Date.now();
     
-    // Check if the overall session has expired (30 min from creation)
+    // Validate session age against original creation time
     const sessionAge = now - (session.createdAt || 0);
     const isSessionValid = sessionAge < APP_CONFIG.VERIFY_WINDOW_MS;
     
-    // Check if the click happened recently
     const timeSinceClick = now - (session.lastClickTime || 0);
     const isValidStep = session.lastStep === step;
     const isRecent = timeSinceClick < APP_CONFIG.VERIFY_WINDOW_MS;
@@ -78,47 +77,41 @@ const VerifyHandler: React.FC = () => {
       
       localStorage.setItem(sessionKey, JSON.stringify(updated));
 
-      // If both steps are now complete, fire the webhook!
       if (updated.cp1 && updated.cp2) {
         sendWebhook(updated.uid || "Unknown", activeSlug);
       }
 
       setTimeout(() => {
         navigate(`/v/${activeSlug}`);
-      }, 1000);
+      }, 800);
     } else {
       if (!isSessionValid) {
-        setError("This session has expired (30 minute limit exceeded).");
+        setError("Your session expired (30 minute limit reached).");
       } else {
-        setError(!isRecent ? "Window expired. Click the start button again." : "Invalid sequence.");
+        setError(!isRecent ? "Security window expired. Please try the step again." : "Invalid sequence detected.");
       }
     }
   }, [searchParams, navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[75vh] px-4 text-center">
+    <div className="flex flex-col items-center justify-center min-h-[75vh] px-6 text-center">
       {!error ? (
-        <div className="space-y-8">
-          <div className="relative">
-            <div className="absolute inset-0 bg-indigo-500/30 blur-2xl rounded-full"></div>
-            <Loader2 className="w-20 h-20 animate-spin text-white mx-auto relative z-10" />
-          </div>
-          <h2 className="text-3xl font-black italic uppercase tracking-tighter">Syncing Step {searchParams.get('step')}...</h2>
-          <p className="text-gray-500 text-sm max-w-xs mx-auto font-medium">Validating credentials with secure gateway. Do not close this tab.</p>
+        <div className="space-y-6">
+          <Loader2 className="w-12 h-12 animate-spin text-white opacity-40 mx-auto" />
+          <h2 className="text-xl font-bold uppercase tracking-tight">Syncing Step {searchParams.get('step')}</h2>
+          <p className="text-gray-500 text-xs max-w-xs mx-auto">Connecting to secure gateway. Please wait...</p>
         </div>
       ) : (
-        <div className="glass p-12 rounded-[3rem] max-w-md w-full border-red-500/20 shadow-2xl">
-          <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-8 border border-red-500/20">
-            <AlertCircle className="w-10 h-10 text-red-500" />
-          </div>
-          <h2 className="text-2xl font-bold mb-4 italic uppercase tracking-tight">Checkpoint Failed</h2>
-          <p className="text-gray-400 text-sm mb-10 leading-relaxed font-medium">{error}</p>
+        <div className="glass p-10 rounded-[2rem] max-w-sm w-full border-red-500/20 shadow-2xl">
+          <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-6" />
+          <h2 className="text-lg font-bold mb-2 uppercase">Sync Failed</h2>
+          <p className="text-gray-500 text-xs mb-8 leading-relaxed">{error}</p>
           <button 
             onClick={() => navigate('/')}
-            className="flex items-center justify-center space-x-3 w-full bg-white text-black font-black py-5 rounded-2xl transition-all shadow-xl hover:bg-indigo-50 active:scale-95"
+            className="flex items-center justify-center space-x-2 w-full bg-white text-black font-bold py-4 rounded-xl transition-all hover:bg-gray-200 active:scale-95"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="uppercase tracking-tighter">Try Again</span>
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-xs uppercase tracking-widest">Go Back</span>
           </button>
         </div>
       )}
