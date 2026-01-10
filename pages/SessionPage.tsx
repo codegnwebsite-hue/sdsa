@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+// Fix: Remove useNavigate as it was unused and causing errors; ensure useParams/Link compatibility
+import { useParams, Link } from 'react-router-dom';
 import { CheckCircle2, Lock, ExternalLink, Shield, Loader2, Ticket, AlertCircle, Home } from 'lucide-react';
 import { APP_CONFIG } from '../constants';
 

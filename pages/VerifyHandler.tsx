@@ -40,7 +40,8 @@ const VerifyHandler: React.FC = () => {
   useEffect(() => {
     const slugFromUrl = searchParams.get('slug');
     const activeSlug = slugFromUrl || localStorage.getItem('active_session_slug');
-    const step = parseInt(searchParams.get('step') || '0');
+    const stepStr = searchParams.get('step');
+    const step = stepStr ? parseInt(stepStr) : 0;
 
     if (!activeSlug || isNaN(step)) {
       setError("Session link broken. Use the link provided by our Discord bot.");

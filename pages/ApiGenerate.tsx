@@ -11,11 +11,17 @@ const ApiGenerate: React.FC = () => {
 
   useEffect(() => {
     const uid = searchParams.get('uid');
-    const providedKey = searchParams.get('key');
+    const providedKey = searchParams.get('key')?.trim();
     const service = searchParams.get('service') || 'Verification';
 
+    // Verify the key against our config
     if (!providedKey || providedKey !== APP_CONFIG.API_SECRET) {
-      setResponse({ status: "error", code: 401, message: "Unauthorized: Invalid API key." });
+      setResponse({ 
+        status: "error", 
+        code: 401, 
+        message: "Unauthorized: Invalid API key.",
+        hint: "Ensure your 'key' parameter matches VITE_API_SECRET in Vercel or the default in constants.tsx"
+      });
       return;
     }
 
