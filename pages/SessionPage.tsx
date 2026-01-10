@@ -121,11 +121,6 @@ const SessionPage: React.FC = () => {
     setTimeout(() => { window.location.href = targetLink; }, 800);
   };
 
-  const manualSync = () => {
-    if (!slug || !session?.lastStep) return;
-    navigate(`/verify?slug=${slug}&step=${session.lastStep}`);
-  };
-
   const formatTime = (ms: number) => {
     const s = Math.max(0, Math.floor(ms / 1000));
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
@@ -248,11 +243,6 @@ const SessionPage: React.FC = () => {
                     <span className="text-xs uppercase tracking-[0.2em]">Launch Step 1</span>
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
-                  {session.lastStep === 1 && (
-                    <button onClick={manualSync} className="text-[10px] font-bold text-gray-500 hover:text-white transition-colors uppercase tracking-widest flex items-center justify-center gap-2 mx-auto">
-                      <RefreshCw className="w-3 h-3" /> Sync Session Status
-                    </button>
-                  )}
                 </div>
               </div>
             ) : !session.cp2 ? (
@@ -271,11 +261,6 @@ const SessionPage: React.FC = () => {
                     <span className="text-xs uppercase tracking-[0.2em]">Launch Step 2</span>
                     <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
-                  {session.lastStep === 2 && (
-                    <button onClick={manualSync} className="text-[10px] font-bold text-gray-500 hover:text-white transition-colors uppercase tracking-widest flex items-center justify-center gap-2 mx-auto">
-                      <RefreshCw className="w-3 h-3" /> Sync Session Status
-                    </button>
-                  )}
                 </div>
               </div>
             ) : (

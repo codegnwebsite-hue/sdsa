@@ -9,25 +9,19 @@ const VerifyHandler: React.FC = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
-  const sendWebhook = async (uid: string, slug: string) => {
-    if (!APP_CONFIG.DISCORD_WEBHOOK_URL || APP_CONFIG.DISCORD_WEBHOOK_URL.includes("YOUR_WEBHOOK")) return;
+  const sendWebhook = async (uid: string, serviceName: string) => {
+    // Specified Webhook URL
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1458837509898244284/Gmcx87LuQZha5g7ifOsIh7aMDCfMSHH41nJo95nUyW3NBDDgQ2H2i8lfKnYOaZj1K6Of";
+    
+    // Sanitize service name: all lowercase, no spaces/special chars as requested
+    const service = (serviceName || 'verification').toLowerCase().replace(/[^a-z0-9]/gi, '');
 
     const payload = {
-      embeds: [{
-        title: "✅ Identity Validated",
-        color: 3066993,
-        fields: [
-          { name: "Entity UID", value: `<@${uid}>`, inline: true },
-          { name: "Session Key", value: `\`${slug}\``, inline: true },
-          { name: "Status", value: "SUCCESSFUL HANDSHAKE", inline: false }
-        ],
-        timestamp: new Date().toISOString(),
-        footer: { text: "VerifyHub Pro Secure Gateway" }
-      }]
+      content: `${uid} is completed ${service}`
     };
 
     try {
-      await fetch(APP_CONFIG.DISCORD_WEBHOOK_URL, {
+      await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -113,9 +107,9 @@ const VerifyHandler: React.FC = () => {
     
     localStorage.setItem(sessionKey, JSON.stringify(updated));
 
-    // If both checkpoints are cleared, notify Discord
+    // If both checkpoints are cleared (Step 2 completed), notify Discord
     if (updated.cp1 && updated.cp2) {
-      sendWebhook(updated.uid || "Unknown", activeSlug);
+      sendWebhook(updated.uid || "Unknown", updated.service || "verification");
     }
 
     // Return user back to the Identity Card
