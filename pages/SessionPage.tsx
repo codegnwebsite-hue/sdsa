@@ -131,6 +131,14 @@ const SessionPage: React.FC = () => {
     return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
   };
 
+  const getGlowClass = (plan?: string) => {
+    const p = (plan || 'Free').toLowerCase();
+    if (p.includes('booster')) return 'bg-pink-500/20';
+    if (p.includes('premium')) return 'bg-blue-500/20';
+    if (p.includes('basic')) return 'bg-amber-900/30';
+    return 'bg-green-500/20';
+  };
+
   if (loading) return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
       <Loader2 className="w-10 h-10 animate-spin text-indigo-500" />
@@ -155,7 +163,10 @@ const SessionPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-xl mx-auto px-6 py-12 md:py-20">
+    <div className="max-w-xl mx-auto px-6 py-12 md:py-20 relative">
+      {/* Background Neon Glow */}
+      <div className={`absolute inset-0 blur-[120px] rounded-full opacity-40 pointer-events-none -z-10 ${getGlowClass(session.plan)}`}></div>
+      
       <div className="glass rounded-[2.5rem] overflow-hidden shadow-2xl border-white/5 relative p-8">
         
         {/* Compact Header: Avatar + Name + Service Badge */}
