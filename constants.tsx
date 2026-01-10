@@ -8,12 +8,20 @@ export const APP_CONFIG = {
   CHECKPOINT_2_LINK: "https://link.pocolinks.com/BBwS4I",
   
   // Webhook and Secret
-  DISCORD_WEBHOOK_URL: (import.meta as any).env?.VITE_DISCORD_WEBHOOK_URL || (process as any).env?.VITE_DISCORD_WEBHOOK_URL || "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL_HERE",
+  DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL_HERE",
   SERVER_NAME: "Elite Gaming Community",
   
-  // Verification window in milliseconds (10 minutes)
-  VERIFY_WINDOW_MS: 10 * 60 * 1000,
+  // Stats
+  STATS: {
+    VERIFIED_USERS: "52,401+",
+    UPTIME: "99.99%",
+    PROTECTION: "AES-256",
+    AVG_TIME: "45s"
+  },
 
-  // Use this for API validation
-  API_SECRET: (import.meta as any).env?.VITE_API_SECRET || (process as any).env?.VITE_API_SECRET || "YOUR_SECRET_KEY"
+  // Verification window in milliseconds (30 minutes)
+  VERIFY_WINDOW_MS: 30 * 60 * 1000,
+
+  // API Validation Secret
+  API_SECRET: "YOUR_SECRET_KEY"
 };

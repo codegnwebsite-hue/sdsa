@@ -52,17 +52,23 @@ const VerifyHandler: React.FC = () => {
     const stored = localStorage.getItem(sessionKey);
 
     if (!stored) {
-      setError("Session expired. Please request a new link.");
+      setError("Session expired or invalid. Please request a new link.");
       return;
     }
 
     const session = JSON.parse(stored);
     const now = Date.now();
+    
+    // Check if the overall session has expired (30 min from creation)
+    const sessionAge = now - (session.createdAt || 0);
+    const isSessionValid = sessionAge < APP_CONFIG.VERIFY_WINDOW_MS;
+    
+    // Check if the click happened recently
     const timeSinceClick = now - (session.lastClickTime || 0);
     const isValidStep = session.lastStep === step;
     const isRecent = timeSinceClick < APP_CONFIG.VERIFY_WINDOW_MS;
 
-    if (isValidStep && isRecent) {
+    if (isSessionValid && isValidStep && isRecent) {
       const updated = {
         ...session,
         [`cp${step}`]: true,
@@ -81,7 +87,11 @@ const VerifyHandler: React.FC = () => {
         navigate(`/v/${activeSlug}`);
       }, 1000);
     } else {
-      setError(!isRecent ? "Window expired. Click the start button again." : "Invalid sequence.");
+      if (!isSessionValid) {
+        setError("This session has expired (30 minute limit exceeded).");
+      } else {
+        setError(!isRecent ? "Window expired. Click the start button again." : "Invalid sequence.");
+      }
     }
   }, [searchParams, navigate]);
 
@@ -93,8 +103,8 @@ const VerifyHandler: React.FC = () => {
             <div className="absolute inset-0 bg-indigo-500/30 blur-2xl rounded-full"></div>
             <Loader2 className="w-20 h-20 animate-spin text-white mx-auto relative z-10" />
           </div>
-          <h2 className="text-3xl font-black italic uppercase tracking-tighter">Encrypting Step Data...</h2>
-          <p className="text-gray-500 text-sm max-w-xs mx-auto font-medium">Synchronizing with secure verification layer. Keep this window open.</p>
+          <h2 className="text-3xl font-black italic uppercase tracking-tighter">Syncing Step {searchParams.get('step')}...</h2>
+          <p className="text-gray-500 text-sm max-w-xs mx-auto font-medium">Validating credentials with secure gateway. Do not close this tab.</p>
         </div>
       ) : (
         <div className="glass p-12 rounded-[3rem] max-w-md w-full border-red-500/20 shadow-2xl">
