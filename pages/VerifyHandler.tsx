@@ -9,7 +9,7 @@ const VerifyHandler: React.FC = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
-  const sendWebhook = async (uid: string, serviceName: string) => {
+  const sendWebhook = async (userName: string, serviceName: string) => {
     // Specified Webhook URL
     const WEBHOOK_URL = "https://discord.com/api/webhooks/1458837509898244284/Gmcx87LuQZha5g7ifOsIh7aMDCfMSHH41nJo95nUyW3NBDDgQ2H2i8lfKnYOaZj1K6Of";
     
@@ -17,7 +17,7 @@ const VerifyHandler: React.FC = () => {
     const service = (serviceName || 'verification').toLowerCase().replace(/[^a-z0-9]/gi, '');
 
     const payload = {
-      content: `${uid} is completed ${service}`
+      content: `${userName} is completed ${service}`
     };
 
     try {
@@ -88,7 +88,7 @@ const VerifyHandler: React.FC = () => {
     // 4. Source Validation (Referrer Check)
     const referrer = document.referrer.toLowerCase();
     const isLinkvertise = referrer.includes('link-hub.net') || referrer.includes('linkvertise.com');
-    const isPocoLinks = referrer.includes('pocolinks.com');
+    const isShortXLinks = referrer.includes('shortxlinks.in');
 
     // Soft warning/check for bypassers (Note: Some browsers/VPNs strip referrer)
     // We enforce strictly if the session state suggests a skip
@@ -109,7 +109,7 @@ const VerifyHandler: React.FC = () => {
 
     // If both checkpoints are cleared (Step 2 completed), notify Discord
     if (updated.cp1 && updated.cp2) {
-      sendWebhook(updated.uid || "Unknown", updated.service || "verification");
+      sendWebhook(updated.userName || "Unknown", updated.service || "verification");
     }
 
     // Return user back to the Identity Card

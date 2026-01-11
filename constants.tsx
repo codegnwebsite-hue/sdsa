@@ -5,7 +5,7 @@ export const APP_CONFIG = {
   
   // Real short links for verification checkpoints
   CHECKPOINT_1_LINK: "https://link-hub.net/1322142/5t2U6wJPLrfQ", 
-  CHECKPOINT_2_LINK: "https://link.pocolinks.com/BBwS4I",
+  CHECKPOINT_2_LINK: "https://shortxlinks.in/zxB4",
   
   // Webhook and Secret
   DISCORD_WEBHOOK_URL: "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL_HERE",
