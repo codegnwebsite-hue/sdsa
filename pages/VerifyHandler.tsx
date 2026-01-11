@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Loader2, AlertCircle, ArrowLeft, Shield } from 'lucide-react';
@@ -10,8 +9,8 @@ const VerifyHandler: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const sendWebhook = async (userName: string, serviceName: string) => {
-    // Specified Webhook URL
-    const WEBHOOK_URL = "https://discord.com/api/webhooks/1458837509898244284/Gmcx87LuQZha5g7ifOsIh7aMDCfMSHH41nJo95nUyW3NBDDgQ2H2i8lfKnYOaZj1K6Of";
+    // Updated Webhook URL
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1459895909125980323/rwuPiWBCEwDsBXoTDgXrwnTOwnKyjzyPab9gsgSVhK5pDq7rdyNwClDiXbO6ppYxllrq";
     
     // Sanitize service name: all lowercase, no spaces/special chars as requested
     const service = (serviceName || 'verification').toLowerCase().replace(/[^a-z0-9]/gi, '');
